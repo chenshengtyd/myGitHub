@@ -1,0 +1,63 @@
+SSH
+	Spirng + Strtus2 + Hibernate
+SSM
+	Spring + SpringMVC + Mybatis
+	
+SSI
+	Ibatis + Spring + SpringMVc/Strtus2
+	
+@Test
+
+JavaBean:
+Pojo
+entity
+dto
+
+src
+	main
+		java
+		resources
+	test
+		java
+		resources
+
+MVC
+	M:model
+		Mybatis
+		Hibernate
+	V:view
+		SpringMVC
+		Struts2
+	C:Controller
+		Spring
+		
+<environments>
+	<!-- MySQL -->
+	<environment>
+		driver
+		url
+		username	root
+		password	root
+	</environment>
+	
+	<!-- Oracle -->
+	<environment>
+		driver
+		url
+		username	scott
+		password	xxxx
+	</environment>
+</environments>
+
+User.java 			--JavaBean
+UserMapper.java		--接口文件
+UserMapper.xml		--映射文件 --相当于实现类
+
+	<mappers>
+		<!-- com/whcs/mapping/UserMapper.xml -->
+		<mapper  resource="cn/smbms/dao/user/UserMapper.xml"/>
+	</mappers>
+
+	
+IDEA配置Maven
+	-DarchetypeCatalog=internal

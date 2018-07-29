@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.whcs.dao.StudentMapper">
+    <resultMap id="BaseResultMap" type="com.whcs.entity.Student">
+        <id column="sid" property="sid" jdbcType="INTEGER"/>
+        <result column="sname" property="sname" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        sid, sname, tid
+    </sql>
+
+    <!--查询学生通过主键-->
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer">
+        select
+        <include refid="Base_Column_List"/>
+        from student
+        <!--<where>
+            /*Integer*/
+            <if test="sid != null">/*false*/
+                sid = #{sid,jdbcType=INTEGER}
+            </if>
+        </where>-->
+
+        <!--<where>
+            <choose>
+                <when test="sid == 2">
+                    sid = 1
+                </when>
+                <when test="sid == 4">
+                    sid = 2
+                </when>
+                <otherwise>
+                    sid = 3
+                </otherwise>
+            </choose>
+        </where>-->
+
+        <!--<trim prefix="where" prefixOverrides="and || or">
+            <if test="sid==1">/*false*/
+                sid = 1
+            </if>
+            <if test="sid == 2">/*false*/
+                and sid = 2
+            </if>
+            <if test="sid==3">/*true*/
+                or sid = 3
+            </if>
+        </trim>
+        where sid = 1 order by sid desc
+        <trim suffix=" order by sid desc">
+            where sid = 1
+        </trim>-->
+    </select>
+
+    <!--
+    update tableName set
+    -->
+
+    <resultMap id="MyResultMap" type="Student">
+        <id column="sid" property="sid" />
+        <result column="sname" property="sname" />
+        <!--一对一 OneToOne-->
+        <association property="teacher" javaType="Teacher">
+            <id property="tid" column="tid" />
+            <result property="tname" column="tname" />
+        </association>
+    </resultMap>
+    <select id="queryStudent" resultMap="MyResultMap">
+        select * from student s, teacher t where s.tid = t.tid and s.sid = 6
+    </select>
+
+    <!--List<Integer>:4,5,6-->
+    <select id="queryStudentLike" parameterType="List" resultMap="MyResultMap">
+        select * from student s where s.sid in
+        <foreach collection="list" item="item" index="index" open="(" separator="," close=")">
+            ${item}
+        </foreach>
+    </select>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from student
+    where sid = #{sid,jdbcType=INTEGER}
+  </delete>
+    <insert id="insert" parameterType="com.whcs.entity.Student">
+    insert into student (sid, sname, tid
+      )
+    values (#{sid,jdbcType=INTEGER}, #{sname,jdbcType=VARCHAR}, #{tid,jdbcType=INTEGER}
+      )
+  </insert>
+    <insert id="insertSelective" parameterType="com.whcs.entity.Student">
+        insert into student
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="sid != null">
+                sid,
+            </if>
+            <if test="sname != null">
+                sname,
+            </if>
+            <if test="tid != null">
+                tid,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="sid != null">
+                #{sid,jdbcType=INTEGER},
+            </if>
+            <if test="sname != null">
+                #{sname,jdbcType=VARCHAR},
+            </if>
+            <if test="tid != null">
+                #{tid,jdbcType=INTEGER},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="updateByPrimaryKeySelective" parameterType="com.whcs.entity.Student">
+        update student
+        <set>
+            <if test="sid != null">
+                sid = #{sid,jdbcType=INTEGER},
+            </if>
+            <if test="sname != null">
+                name = #{sname,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where sid = #{sid,jdbcType=INTEGER}
+    </update>
+
+    <update id="updateByPrimaryKey" parameterType="com.whcs.entity.Student">
+    update student
+    set sname = #{sname,jdbcType=VARCHAR},
+      tid = #{tid,jdbcType=INTEGER}
+    where sid = #{sid,jdbcType=INTEGER}
+  </update>
+</mapper>
