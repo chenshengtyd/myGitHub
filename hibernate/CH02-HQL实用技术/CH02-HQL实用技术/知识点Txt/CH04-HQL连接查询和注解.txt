@@ -1,0 +1,219 @@
+一、HQL的连接查询
+	连接类型		HQL语法
+	内连接			inner join或 join
+	迫切内连接		inner join fetch或 join fetch
+	左外连接		left outer join或 left join	
+		示例：
+		List<Object[]> list = session.createQuery("from Emp e left join e.dept").list();
+		List<Emp> list = session.createQuery("from Emp e left join fetch e.dept").list();
+	迫切左外连接	left outer join fetch 或 left join fetch
+	右外连接		right outer join或 right join
+	
+	Hibernate中的Fetch参考博客：http://blog.csdn.net/tianlincao/article/details/6084141
+	String hql="select u.userName, u.telephone, u.address, g.goodsName from Users u, Goods g where u.userId=g.userId";
+
+二、分组统计数据
+	2.1.聚合函数
+		函数名称	说明
+		-------------------------
+		count()		统计记录条数
+			Long count = (Long) session.createQuery("select count(id) from Dept").uniqueResult();//id=deptno
+		sum()		求和
+			Long salarySum = (Long) session.createQuery("select sum(e.sal) from Emp e").uniqueResult();
+		max()		求最大值
+			Long salary = (Long) session.createQuery("select max(e.sal) from Emp e").uniqueResult();
+		min()		求最小值
+			Long salary = (Long) session.createQuery("select min(e.sal) from Emp e").uniqueResult();
+		avg()		求平均值
+			Double avg = (Double) session.createQuery("select avg(e.sal) from Emp e").uniqueResult();
+		组合应用
+			Object[] salarys = (Object[]) session.createQuery("select min(sal), max(sal), avg(sal) from Emp").uniqueResult();
+		distinct	去重
+			Object count = session.createQuery("select count(distinct job) from Emp ").uniqueResult();
+	2.2.分组函数Group By运用
+		List<Object[]> list = session.createQuery("select e.job, count(e) from Emp e group by e.job").list();
+		List<Object[]> list = session.createQuery("select e.dept.dname, avg(e.sal) from Emp e group by e.dept.dname").list();
+		List<Object[]> list = session.createQuery("select job,min(sal),max(sal) from Emp group by job").list();
+		List<Object[]> list = session
+                    .createQuery("select e.dept.dname, avg(e.sal) from Emp e group by e.dept.dname having avg(e.sal) > 4000").list();
+		List<DeptSalary> list = session.createQuery(
+                        "select new com.whcs.entity.DeptSalary(dept.dname, avg(sal))" +
+                                " from Emp group by dept.dname" +
+                                " having avg(sal) > 2000")
+                        .list();
+		
+三、子查询
+	3.1.子查询
+		List<Emp> list = session.createQuery("from Emp e where e.sal > (select avg(sal) from Emp)").list();
+		----------------------
+		关键字	 		说明
+		---------------------------------
+		all				返回的所有记录			对所有数据都满足条件，整个条件才成立
+			List<Dept> list = session.createQuery("from Dept d where 5000 > all(select e.sal from d.emps e)").list();
+																				1000 2000 3000 4000 4999
+		any				返回的任意一条记录		只要有一条数据满足条件，整个条件成立，例如：3大于1，2 
+			List<Dept> list = session.createQuery("from Dept d where 5000 > any(select e.sal from d.emps e)").list();
+			List<Dept> list = session.createQuery("from Dept d where 5000 = any(select e.sal from d.emps e)").list();
+		some			和“any”意思相同			等效any
+			List<Dept> list = session.createQuery("from Dept d where 5000 = some(select e.sal from d.emps e)").list();
+		in				与“=any”意思相同
+			List<Dept> list = session.createQuery("from Dept d where 5000 in (select e.sal from d.emps e)").list();
+			List<Dept> list = session.createQuery("from Dept d where ? in elements(d.emps)").setParameter(0, emp).list();
+			List<Dept> list = session.createQuery("from Dept d where ? in (from d.emps)").setParameter(0, emp).list();
+		exists			至少返回一条记录
+			List<Dept> list = session.createQuery("from Dept d where exists (from d.emps)").list();
+		查询员工个数大于5的部门
+			List<Dept> list = session.createQuery("from Dept d where d.emps.size > 5").list();
+			等效
+			List<Dept> list = session.createQuery("from Dept d where size(d.emps) > 5").list();
+
+四、查询性能优化 1
+	1.Hibernate查询优化策略
+		使用延迟加载等方式避免加载多余数据
+		通过使用连接查询，配置二级缓存、查询缓存等方式减少select语句数目
+		结合缓存机制，使用iterate()方法减少查询字段数及数据库访问次数
+			对比list()方法和iterate()方法
+	2.HQL优化
+		注意避免or、not、like使用不当导致的索引失效
+		注意避免having子句、distinct导致的开销
+		注意避免对索引字段使用函数或进行计算导致的索引失效
+
+五、注解
+	5.1.Hibernate提供了注解来代替hbm.xml文件完成对象-关系映射
+	5.2.使用Hibernate注解的步骤如下：
+		1.使用注解配置持久化类以及对象关联关系
+		2.在Hibernate配置文件（hibernate.cfg.xml）中声明持久化类
+			<mapping  class="持久化类完整限定名"  />
+	5.3.注解—配置持久化类
+		注    解			含义和作用
+		@Entity				将一个类声明为一个持久化类
+		@Table				为持久化类映射指定表
+		@Id					声明了持久化类的标识属性
+		@GeneratedValue		定义标识属性值的生成策略
+		@SequenceGenerator	定义序列生产器
+		@Column				将属性映射到列（字段）
+		@Transient			将忽略这些属性
+		--------------------------------------------------
+		示例：
+			步骤一：
+			@Entity
+			@Table(name = "`EMP`")
+			public class Emp implements java.io.Serializable {
+				@Id
+				/*
+				@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_emp")//seq_emp:序列
+				@SequenceGenerator(name = "seq_emp", sequenceName = "seq_emp_id", allocationSize = 10, initialValue = 1)
+				*/
+				@Column("empno")
+				private Short empNo;
+
+				@Column(name = "`ENAME`")
+				private String empName;
+
+				@Column(name = "`HIREDATE`")
+				private Date hiredate;
+
+				@Column(name = "`JOB`")
+				private String job;
+
+				@Column(name = "`MGR`")
+				private Short mgr;
+
+				@Column(name = "`SAL`")
+				private Double salary;
+
+				@Column(name = "`COMM`")
+				private Double comm;
+				
+				@Transient
+				private Dept dept;
+				
+				//getter 和 setter 方法 省略
+			}
+			步骤二：
+				 在Hibernate配置文件（hibernate.cfg.xml）中添加配置	<mapping class="cn.hibernatedemo.entity.Emp" />
+	5.4.注解—配置关联关系
+		注    解		含义和作用
+		@OneToOne		建立持久化类之间的一对一关联关系
+		@OneToMany		建立持久化类之间的一对多关联关系
+		@ManyToOne		建立持久化类之间的多对一关联关系
+		@JoinColumn		和@ManyToOne配合，指定外键列
+		@ManyToMany		建立持久化类之间的多对多关联关系
+		-------------------------------------------------------
+		示例：
+			1.在Dept实体类中添加注解@OneToMany
+				@Entity
+				@Table(name = "`DEPT`")
+				public class Dept implements java.io.Serializable {
+					@Id
+					@Column(name = "`DEPTNO`")
+					private Integer deptNo;
+					
+					@Column(name = "`DNAME`")
+					private String deptName;
+					
+					@Column(name = "`LOC`")
+					private String location;
+					
+					@OneToMany(mappedBy = "dept", cascade = { CascadeType.All })//添加注解
+					private Set<Emp> emps = new HashSet<Emp>(0);
+					
+					//省略getter 和 setter 方法
+				}
+			2.在Emp实体类中添加注解@ManyToMany
+				@Entity
+				@Table(name = "`EMP`")
+				public class Emp implements java.io.Serializable {
+					@Id
+					@Column(name = "`empNo`")
+					//@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_emp")
+					//@SequenceGenerator(name = "seq_emp", sequenceName = "seq_emp_id", allocationSize = 10, initialValue = 1)
+					private Short empNo;
+
+					@Column(name = "`ENAME`")
+					private String empName;
+
+					@Column(name = "`HIREDATE`")
+					private Date hiredate;
+
+					@Column(name = "`JOB`")
+					private String job;
+
+					@Column(name = "`MGR`")
+					private Short mgr;
+
+					@Column(name = "`SAL`")
+					private Double salary;
+
+					@Column(name = "`COMM`")
+					private Double comm;
+					
+					@ManyToOne(fetch = FetchType.LAZY)
+					@JoinColumn(name = "`DEPTNO`")
+					private Dept dept;
+					
+					//省略getter 和 setter 方法
+				}
+			3.在Hibernate核心配置文件中添加相应的mapping配置
+				<mapping class="cn.whcs.entity.Emp" />
+				<mapping class="cn.whcs.entity.Dept" />
+			4.编写测试方法
+				/**
+				 * 添加Dept数据，并级联添加添加Emp数据
+				 */
+				@Test
+				public void test01() {
+					Dept dept=new Dept(6,"产品部");
+					Emp emp = new Emp();
+					emp.setEmpName("villy");
+					emp.setHiredate(new java.util.Date());
+
+					dept.getEmps().add(emp);
+					emp.setDept(dept);
+
+					new DeptBiz().addNewDept(dept);
+				}
+				
+				
+<!--指定当前session范围和上下文 -->
+<property name="current_session_context_class">thread</property>

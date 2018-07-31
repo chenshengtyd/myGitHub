@@ -1,0 +1,125 @@
+一、多对一映射
+	1.1.在Emp实体类中添加一个新的属性，并且添加Getter和Setter方法
+		private Dept dept;
+	1.2.在Emp.hbm.xml映射文件中添加<many-to-one>标签
+		<many-to-one name="dept" column="DEPTNO" class="com.whcs.entity.Dept" />
+	1.3.编写测试方法
+		@Test
+		public void test02(){
+			List<Emp> list = session.createQuery(" from Emp ").list();
+			for (Emp emp : list) {
+				System.out.print(emp.toString());
+				System.out.println("   " + emp.getDept().getDname());
+			}
+		}
+		
+二、一对多映射
+	2.1.在Dept实体类中添加一个新的属性Set<Emp>，并且添加Getter和Setter方法
+		private Set<Emp> emps;
+	2.2.在Dept.hbm.xml映射文件中添加<set>标签
+		<set name="emps" cascade="">
+            <key column="DEPTNO" />
+            <one-to-many class="com.whcs.entity.Emp" />
+        </set>
+	2.3.编写测试方法
+		@Test
+		public void testOneToMany(){
+			List<Dept> list = session.createQuery(" from Dept where deptno = 10").list();
+			for(Dept dept : list){
+				Set<Emp> emps = dept.getEmps();
+				emps.forEach(System.out::println);
+			}
+		}
+		
+	one-to-many
+	dept   emp
+	10     deptno=10
+	
+三、cascade属性
+	3.1.解释；
+		cascade属性是设置级联操作的。
+		也就是在操作一端的数据如果影响到多端数据时会进行级联操作，一对一的时候直接写在标签上，其他的要写在set标签上
+	3.2.参数
+	cascade="none|save-update|all|all-delete-orphan"
+		none 
+			就是不使用级联操作，默认级联是none。
+		save-update 
+			也就是只有对象保存操作（持久化操作）或者是持久化对象的更新操作，才会级联操作关联对象（子对象）。
+		delete
+		all 
+			对持久化对象的所有操作都会级联操作关联对象（子对象）。
+		all-delete-orphan
+			在多端进行删除操作时，会再多端表中留下null空纪录，设置了级联操作为delete之会将表中表示关联的外键id置成null，
+			不会将这条纪录也删除掉，而把级联设置成delete-orphan就不会留有空纪录，而是级联的把相关纪录删除掉。
+			
+四、inverse属性
+	inverse属性指定了关联关系中的方向
+		inverse设置为false，则为主动方(Dept)，由主动方负责维护关联关系，默认是false 
+		inverse设置为true，不负责维护关联关系
+	参考博客：http://blog.163.com/xian_zx@126/blog/static/11753178320100211155716/
+	
+	Inverse和Cascade的比较
+		Inverse：负责控制关系，默认为false，也就是关系的两端都能控制，
+				但这样会造成一些问题，更新的时候会因为两端都控制关系，于是重复更新。一般来说有一端要设为true。
+		Cascade：负责控制关联对象的级联操作，包括更新、删除等，
+			也就是说对一个对象进行更新、删除时，其它对象也受影响，比如我删除一个对象，那么跟它是多对一关系的对象也全部被删除。
+			举例说明区别：删除“一”那一端一个对象O的时候，如果“多”的那一端的Inverse设为true，则把“多”的那一
+				端所有与O相关联的对象外键清空；如果“多”的那一端的Cascade设为Delete，则把“多”的那一端所有与O相关联的对象全部删除。
+
+五、多对多关联(many-to-many)
+	5.1.分析表的关系,映射成实体类，并且要重新在 Hibernate核心配置文件中添加username和password
+	5.2.给Project实体类添加属性，并且添加Getter和Setter方法
+		private Set<Employee> employees = new HashSet<Employee>(0);
+	5.3.给Project.hbm.xml映射文件中添加<set>标签
+		 <set name="employees" table="PROEMP" cascade="save-update">
+            <key column="RPROID" />
+            <many-to-many class="com.whcs.entity.Employee" column="REMPID" />
+        </set>
+	5.4.给Employee实体类添加新的属性，并且添加Getter和Setter方法
+		private Set<Project> projects = new HashSet<Project>(0);
+	5.5.给Employee.hbm.xml映射文件中添加<set>标签
+		<set name="projects" inverse="true" table="PROEMP">
+            <key column="REMPID"/>
+            <many-to-many class="com.whcs.entity.Project" column="RPROID" />
+        </set>
+	5.6.编写测试方法
+		@Test
+		public void testManyToMany(){
+			Employee employee1 = new Employee(1, "张三");
+			Employee employee2 = new Employee(2, "李四");
+
+			Project project1 = new Project(1, "1号项目");
+			Project project2 = new Project(2, "2号项目");
+
+			project1.getEmployees().add(employee1);
+			project1.getEmployees().add(employee2);
+
+			project2.getEmployees().add(employee1);
+
+			session.save(project1);
+			session.save(project2);
+		}
+		
+六、延迟加载
+	5.1.延迟加载（lazy load懒加载）是在真正需要数据时才执行SQL语句进行查询，避免了无谓的性能开销
+	5.2.延迟加载策略的设置分为
+		类级别的查询策略
+		一对多和多对多关联的查询策略
+		多对一关联的查询策略
+	5.3.lazy属性
+		5.3.1.一对多(one-to-many)和多对多(many-to-many)关联的查询策略
+			lazy属性值	 	加载策略
+			true（默认）	延迟加载
+			false			立即加载
+			extra			增强延迟加载
+		5.3.2.多对一关(many-to-one)联的查询策略
+			lazy属性值	 	加载策略
+			proxy（默认）	延迟加载
+			no-proxy		无代理延迟加载
+			false			立即加载
+			
+七、Open Session In View模式
+	7.1.在用户的每一次请求过程始终保持一个Session对象打开着
+	7.2.PPT图片显示
+
+
