@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yeahsir.dao.PetMapper">
+    <resultMap id="BaseResultMap" type="com.yeahsir.entity.Pet">
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="masterId" property="masterid" jdbcType="INTEGER"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="typeId" property="typeid" jdbcType="INTEGER"/>
+        <result column="health" property="health" jdbcType="INTEGER"/>
+        <result column="love" property="love" jdbcType="INTEGER"/>
+        <result column="adoptTime" property="adopttime" jdbcType="TIMESTAMP"/>
+        <result column="status" property="status" jdbcType="VARCHAR"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        id, masterId, name, typeId, health, love, adoptTime, status
+    </sql>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer">
+        select
+        <include refid="Base_Column_List"/>
+        from pet
+        where id = #{id,jdbcType=INTEGER}
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from pet
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+    <insert id="insert" parameterType="com.yeahsir.entity.Pet">
+    insert into pet (id, masterId, name, 
+      typeId, health, love, 
+      adoptTime, status)
+    values (#{id,jdbcType=INTEGER}, #{masterid,jdbcType=INTEGER}, #{name,jdbcType=VARCHAR}, 
+      #{typeid,jdbcType=INTEGER}, #{health,jdbcType=INTEGER}, #{love,jdbcType=INTEGER}, 
+      #{adopttime,jdbcType=TIMESTAMP}, #{status,jdbcType=VARCHAR})
+  </insert>
+    <insert id="insertSelective" parameterType="com.yeahsir.entity.Pet">
+        insert into pet
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                id,
+            </if>
+            <if test="masterid != null">
+                masterId,
+            </if>
+            <if test="name != null">
+                name,
+            </if>
+            <if test="typeid != null">
+                typeId,
+            </if>
+            <if test="health != null">
+                health,
+            </if>
+            <if test="love != null">
+                love,
+            </if>
+            <if test="adopttime != null">
+                adoptTime,
+            </if>
+            <if test="status != null">
+                status,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=INTEGER},
+            </if>
+            <if test="masterid != null">
+                #{masterid,jdbcType=INTEGER},
+            </if>
+            <if test="name != null">
+                #{name,jdbcType=VARCHAR},
+            </if>
+            <if test="typeid != null">
+                #{typeid,jdbcType=INTEGER},
+            </if>
+            <if test="health != null">
+                #{health,jdbcType=INTEGER},
+            </if>
+            <if test="love != null">
+                #{love,jdbcType=INTEGER},
+            </if>
+            <if test="adopttime != null">
+                #{adopttime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="status != null">
+                #{status,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="com.yeahsir.entity.Pet">
+        update pet
+        <set>
+            <if test="masterid != null">
+                masterId = #{masterid,jdbcType=INTEGER},
+            </if>
+            <if test="name != null">
+                name = #{name,jdbcType=VARCHAR},
+            </if>
+            <if test="typeid != null">
+                typeId = #{typeid,jdbcType=INTEGER},
+            </if>
+            <if test="health != null">
+                health = #{health,jdbcType=INTEGER},
+            </if>
+            <if test="love != null">
+                love = #{love,jdbcType=INTEGER},
+            </if>
+            <if test="adopttime != null">
+                adoptTime = #{adopttime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="status != null">
+                status = #{status,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where id = #{id,jdbcType=INTEGER}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="com.yeahsir.entity.Pet">
+    update pet
+    set masterId = #{masterid,jdbcType=INTEGER},
+      name = #{name,jdbcType=VARCHAR},
+      typeId = #{typeid,jdbcType=INTEGER},
+      health = #{health,jdbcType=INTEGER},
+      love = #{love,jdbcType=INTEGER},
+      adoptTime = #{adopttime,jdbcType=TIMESTAMP},
+      status = #{status,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

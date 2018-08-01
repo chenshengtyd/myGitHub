@@ -1,0 +1,5 @@
+public class PhoneNumberModel {
+	private String areaCode;//区号
+	private String phoneNumber;//电话号码
+	//省略 getter/setter
+}

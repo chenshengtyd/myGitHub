@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+
+   
+    <!--Spring3.1之前的注解 HandlerMapping -->
+<!--     <bean class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping"/> -->
+    
+    <!--Spring3.1之前的注解 HandlerAdapter -->
+<!--      <bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter"> 
+        <property name="webBindingInitializer">
+            <bean class="cn.javass.chapter7.web.controller.support.initializer.MyWebBindingInitializer"/>
+        </property>
+    </bean>  -->
+     
+ 
+ 	<!-- ①注册ConversionService -->
+ 	<bean id="conversionService" class="org.springframework.format.support.FormattingConversionServiceFactoryBean">
+ 	    <property name="converters">
+ 	       <list>
+	 	        <bean class="cn.javass.chapter7.web.controller.support.converter.PhoneNumberToStringConverter"/>
+	 	        <bean class="cn.javass.chapter7.web.controller.support.converter.StringToPhoneNumberConverter"/>
+	 	        <bean class="cn.javass.chapter7.web.controller.support.converter.StringToDateConverter">
+	 	            <constructor-arg value="yyyy-MM-dd"/>
+	 	        </bean>
+ 	        </list>
+ 	    </property>
+ 	    <property name="formatters">
+ 	        <list>
+ 	            <bean class="cn.javass.chapter7.web.controller.support.formatter.PhoneNumberFormatAnnotationFormatterFactory"/>
+ 	        </list>
+ 	    </property>
+ 	</bean>
+ 	
+ 	
+ 	<!-- 以下 validator  ConversionService 在使用 mvc:annotation-driven 会 自动注册-->
+    <bean id="validator" class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean">
+        <property name="providerClass"  value="org.hibernate.validator.HibernateValidator"/>
+        <!-- 如果不加默认到 使用classpath下的 ValidationMessages.properties -->
+        
+    </bean>
+
+ 	
+ 	
+ 	<!-- ②使用ConfigurableWebBindingInitializer注册conversionService -->
+	<bean id="webBindingInitializer" class="org.springframework.web.bind.support.ConfigurableWebBindingInitializer">
+	    <property name="conversionService" ref="conversionService"/>
+	    <property name="validator" ref="validator"/>
+	</bean>
+	 	
+ 
+    <!--Spring3.1开始的注解 HandlerMapping -->
+    <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping">
+        <property name="interceptors">
+            <list>
+                <bean class="org.springframework.web.servlet.handler.ConversionServiceExposingInterceptor">
+                    <constructor-arg ref="conversionService"/>
+                </bean>
+            </list>
+        </property>
+    </bean> 
+    
+    <!--Spring3.1开始的注解 HandlerAdapter -->
+    <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter">
+        <property name="webBindingInitializer" ref="webBindingInitializer">
+            <!-- <bean class="cn.javass.chapter7.web.controller.support.initializer.MyWebBindingInitializer"/> -->
+        </property>
+    </bean> 
+     
+    <!-- ViewResolver -->
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="viewClass" value="org.springframework.web.servlet.view.JstlView"/>
+        <property name="prefix" value="/WEB-INF/jsp/"/>
+        <property name="suffix" value=".jsp"/>
+    </bean>
+    
+    <!-- 处理器 -->
+    <bean class="cn.javass.chapter7.web.controller.SuccessController"/>
+    <bean class="cn.javass.chapter7.web.controller.DataBinderTestController"/>
+    <bean class="cn.javass.chapter7.web.controller.DataFormatTestController"/>
+
+    <bean id="messageSource" class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
+        <property name="basename" value="classpath:messages"/>
+        <property name="fileEncodings" value="utf-8"/>
+        <property name="cacheSeconds" value="120"/>
+    </bean>
+    
+    <bean class="cn.javass.chapter7.web.controller.RegisterSimpleFormController"/>
+    
+    <bean class="cn.javass.chapter7.web.controller.validate.HelloWorldController"/>
+    <bean class="cn.javass.chapter7.web.controller.validate.ValidatorAnnotationTestController"/>
+    <bean class="cn.javass.chapter7.web.controller.validate.MessageTestController"/>
+    <bean class="cn.javass.chapter7.web.controller.validate.MultiModelController"/>
+</beans>

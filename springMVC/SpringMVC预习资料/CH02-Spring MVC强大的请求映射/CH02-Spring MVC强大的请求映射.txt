@@ -1,0 +1,93 @@
+http://jinnianshilongnian.iteye.com/blog/1684403
+
+一、	请求方法映射限定
+	a)	GET或POST方法：@RequestMapping(value="/create", method = RequestMethod.GET)
+		i.	除了GET、POST，还有HEAD、OPTIONS、PUT、DELETE、TRACE。
+		ii.	DispatcherServlet默认开启对 GET、POST、PUT、DELETE、HEAD的支持；
+	b)	请求数据中有指定参数名: @RequestMapping(params="create", method=RequestMethod.GET)
+	c)	请求数据中没有指定参数名: @RequestMapping(params="!create", method=RequestMethod.GET)//进行类级别的@RequestMapping窄化
+	d)	请求数据中指定参数名=值: @RequestMapping(params="submitFlag=create", method=RequestMethod.GET)
+	e)	请求数据中指定参数名!=值: @RequestMapping(params="submitFlag!=create", method=RequestMethod.GET)
+	f)	组合使用是“且”的关系: @RequestMapping(params={"test1", "test2=create"}) //②进行类级别的@RequestMapping窄化
+二、	请求头数据映射限定
+	a)	准备环境, 
+		i.	建议chrome最新版本；
+		ii.	插件：ModHeader
+		iii.	安装地址：https://chrome.google.com/webstore/detail/idgpnmonknjnojddfkpgkljpfnnfcklj
+	b)	请求头数据中有指定参数名：@RequestMapping(value="/header/test1", headers = "Accept")：表示请求的URL必须为“/header/test1” 且 请求头中必须有Accept参数才能匹配。
+	c)	请求头数据中没有指定参数名: @RequestMapping(value="/header/test2", headers = "!abc")
+	d)	请求头数据中指定参数名=值: @RequestMapping(value="/header/test3", headers = "Content-Type=application/json")
+	e)	请求头数据中指定参数名!=值:@RequestMapping(value="/header/test7", headers = "Accept!=text/vnd.wap.wml")
+	f)	组合使用是“且”的关系: @RequestMapping(value="/header/test8", headers = {"Accept!=text/vnd.wap.wml","abc=123"})
+三、	JSON数据
+	a)	服务器端控制器
+		@RequestMapping(value = "/response/ContentType", headers = "Accept=application/json")
+		public void response2(HttpServletResponse response) throws IOException {
+			//①表示响应的内容区数据的媒体类型为json格式，且编码为utf-8(客户端应该以utf-8解码)
+			response.setContentType("application/json;charset=utf-8");
+			//②写出响应体内容
+			String jsonData = "{\"username\":\"zhang\", \"password\":\"123\"}";
+			http://jinnianshilongnian.iteye.com
+			1.17 Spring MVC 3.1新特性 生产者、消费者请求限定 —— 第六章 注
+			解式控制器详解——跟着开涛学SpringMVC
+			第 199 / 285 页
+			response.getWriter().write(jsonData);
+		}
+四、	XML数据
+	a)	服务器端控制器
+		@RequestMapping(value = "/response/ContentType", headers = "Accept=application/xml")
+		public void response3(HttpServletResponse response) throws IOException {
+			//①表示响应的内容区数据的媒体类型为xml格式，且编码为utf-8(客户端应该以utf-8解码)
+			response.setContentType("application/xml;charset=utf-8");
+			//②写出响应体内容
+			String xmlData = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
+			xmlData += "<user><username>zhang</username><password>123</password></user>";
+			response.getWriter().write(xmlData);
+		}
+五、	功能处理方法支持的参数类型
+	a)	ServletRequest/HttpServletRequest 和 ServletResponse/HttpServletResponse
+	b)	InputStream/OutputStream 和 Reader/Writer
+		public void inputOrOutBody(InputStream requestBodyIn, OutputStream responseBodyOut) throws IOException {
+			responseBodyOut.write("success".getBytes());
+		}
+		public void readerOrWriteBody(Reader reader, Writer writer) throws IOException {
+			writer.write("hello");
+		}
+	c)	WebRequest/NativeWebRequest
+	d)	HttpSession
+		public String session(HttpSession session) {
+			System.out.println(session);
+			return "success";
+		}
+	e)	命令/表单对象
+		@RequestMapping(value = "/commandObject", method = RequestMethod.GET)
+		public String toCreateUser(HttpServletRequest request, UserModel user) {
+			return "customer/create";
+		}
+		@RequestMapping(value = "/commandObject", method = RequestMethod.POST)
+		public String createUser(HttpServletRequest request, UserModel user) {
+			System.out.println(user);
+			return "success";
+		}
+	f)	Model、Map、ModelMap
+		@RequestMapping(value = "/model")
+		public String createUser(Model model, Map model2, ModelMap model3) {
+			model.addAttribute("a", "a");
+			model2.put("b", "b");
+			model3.put("c", "c");
+			System.out.println(model == model2);
+			System.out.println(model2 == model3);
+			return "success"
+		}
+	g)	Errors/BindingResult
+	h)	其他杂项: public String other(Locale locale, Principal principal)
+六、	数据绑定注解
+	a)	@RequestParam绑定单个请求参数值: @RequestParam用于将请求参数区数据映射到功能处理方法的参数上。
+		i.	public String requestparam1(@RequestParam String username)
+		ii.	public String requestparam2(@RequestParam("username") String username)
+	b)	@PathVariable绑定URI模板变量值
+	c)	@CookieValue绑定Cookie数据值
+	d)	@RequestHeader绑定请求头数据
+	e)	@ModelAttribute绑定请求参数到命令对象
+	f)	@SessionAttributes绑定命令对象到session
+	g)	@Value绑定SpEL表示式

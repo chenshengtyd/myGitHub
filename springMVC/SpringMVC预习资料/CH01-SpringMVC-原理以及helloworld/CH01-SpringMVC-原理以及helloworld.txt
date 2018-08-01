@@ -1,0 +1,117 @@
+准备工作：
+	1.文档：SpringMVC-文档
+	2.依赖：
+	<!--单元测试Junit依赖-->
+	<dependency>
+		<groupId>junit</groupId>
+		<artifactId>junit</artifactId>
+		<version>4.12</version>
+		<scope>test</scope>
+	</dependency>
+	<!--SpringMVC依赖-->
+	<dependency>
+		<groupId>org.springframework</groupId>
+		<artifactId>spring-webmvc</artifactId>
+		<version>4.3.8.RELEASE</version>
+	</dependency>
+	<!--JSTL依赖-->
+	<dependency>
+		<groupId>javax.servlet</groupId>
+		<artifactId>jstl</artifactId>
+		<version>1.2</version>
+	</dependency>
+	<!--Servlet依赖：可能会用到的依赖-->
+	<dependency>
+		<groupId>javax.servlet</groupId>
+		<artifactId>javax.servlet-api</artifactId>
+		<version>3.1.0</version>
+		<scope>provided</scope>
+	</dependency>
+
+一、介绍Model1和Model2（MVC）
+	a)	什么是Model1，和Model1的结构图
+	b)	什么是Model2，和Model2的结构图
+二、介绍SpringMVC：Spring MVC入门 —— 跟开涛学SpringMVC：http://jinnianshilongnian.iteye.com/blog/1594806
+
+	Spring版本：
+		2.5+	华为-稳定
+		3.x+	跟2.5改变非常大
+		4.X+	不是非常大
+		5.X		研究所
+	
+	a)	采用SpringMVC的好处（学习指南）
+	i.	开发流程图（跟我学第一章）
+	b)	Spring2.5和spring3.0比较
+	c)	SpringMVC的DispatchServlet
+	d)	Contoller接口
+三、SpringMVC第一个程序 HelloWorld
+	a)	JAR包
+	b)	Web.xml文件配置"前端控制器的配置"
+	c)	Springmvc配置文件
+		1.配置HandlerMapping和HandlerAdapter
+			<!-- 2.5 version -->
+			<!-- HandlerMapping -->
+			<bean class="org.springframework.web.servlet.handler.BeanNameUrlHandlerMapping"/>
+			<!-- HandlerAdapter -->
+			<bean class="org.springframework.web.servlet.mvc.SimpleControllerHandlerAdapter"/>
+			和
+			<!-- 3.x version -->
+			<!-- HandlerMapping 托管映射处理器 RequestMappingHandlerMapping -->
+			<bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping"/>
+			<!-- HandlerAdapter 托管适配处理器 RequestMappingHandlerAdapter-->
+			<bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter"/>
+		2.在Spring配置文件中配置ViewResolver
+			<!-- ViewResolver 托管视图解析器-->
+			<bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+				<!--前缀-->
+				<property name="prefix" value="/WEB-INF/jsp/" />
+				<!--后缀-->
+				<property name="suffix" value=".jsp" />
+				<!--视图支持类，视图支持JSTL-->
+				<property name="viewClass" value="org.springframework.web.servlet.view.JstlView" />
+			</bean>
+	d)	Controller
+		1.编写一个普通的类
+		2.编写一个普通的方法，返回参数为ModelAndView
+			public ModelAndView methodName() {
+				//1、收集参数
+				//2、绑定参数到命令对象
+				//3、调用业务对象
+				//4、选择下一个页面
+				ModelAndView mv = new ModelAndView();
+				//添加模型数据 可以是任意的POJO对象
+				mv.addObject("message", "Hello World!");
+				//设置逻辑视图名，视图解析器会根据该名字解析到具体的视图页面
+				mv.setViewName("hello");
+				return mv;
+			}
+		3.给类和方法分别添加注解
+			@Controller
+			@RequestMapping(value = {"/hello"})
+		4.在spring-mvc.xml中添加注解配置信息
+			1.<!--开启注解扫描-->
+				<context:annotation-config />
+			2.<!--这是扫描的包-->
+				<context:component-scan base-package="com.whcs.controller" />
+	e)	View-jsp
+		1.创建JSP，名称跟方法中的mv.setViewName("hello");的设置值一致
+		2.编写输出信息
+			ModelAndView print message = ${message}
+	f)	测试应用
+		1.配置Tomcat信息
+		2.启动Tomcat进行测试
+	g)	请求映射窄化请求映射
+		在类上面添加@RequestMapping(value="xxx")
+
+四、总结
+
+作业：
+	1.抄写十遍
+		核心架构的具体流程步骤如下：
+		1、  首先用户发送请求——>DispatcherServlet，前端控制器收到请求后自己不进行处理，而是委托给其他的解析器进行处理，作为统一访问点，进行全局的流程控制；
+		2、  DispatcherServlet——>HandlerMapping， HandlerMapping将会把请求映射为HandlerExecutionChain对象（包含一个Handler处理器（页面控制器）对象、多个HandlerInterceptor拦截器）对象，通过这种策略模式，很容易添加新的映射策略；
+		3、  DispatcherServlet——>HandlerAdapter，HandlerAdapter将会把处理器包装为适配器，从而支持多种类型的处理器，即适配器设计模式的应用，从而很容易支持很多类型的处理器；
+		4、  HandlerAdapter——>处理器功能处理方法的调用，HandlerAdapter将会根据适配的结果调用真正的处理器的功能处理方法，完成功能处理；并返回一个ModelAndView对象（包含模型数据、逻辑视图名）；
+		5、  ModelAndView的逻辑视图名——> ViewResolver， ViewResolver将把逻辑视图名解析为具体的View，通过这种策略模式，很容易更换其他视图技术；
+		6、  View——>渲染，View会根据传进来的Model模型数据进行渲染，此处的Model实际是一个Map数据结构，因此很容易支持其他视图技术；
+		7、返回控制权给DispatcherServlet，由DispatcherServlet返回响应给用户，到此一个流程结束。

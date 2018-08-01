@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <!-- 3.x version -->
+    <!-- HandlerMapping 托管映射处理器 RequestMappingHandlerMapping -->
+    <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping"/>
+    <!-- HandlerAdapter 托管适配处理器 RequestMappingHandlerAdapter-->
+    <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter">
+        <!--3、注册ConfigurableWebBindingInitializer到RequestMappingHandlerAdapter-->
+        <property name="webBindingInitializer" ref="webBindingInitializer"/>
+        <!--session线程安全-->
+        <property name="synchronizeOnSession" value="true" />
+    </bean>
+
+    <!-- ViewResolver 托管视图解析器-->
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <!--前缀-->
+        <property name="prefix" value="/WEB-INF/views/" />
+        <!--后缀-->
+        <property name="suffix" value=".jsp" />
+        <!--视图支持类，视图支持JSTL-->
+        <property name="viewClass" value="org.springframework.web.servlet.view.JstlView" />
+    </bean>
+
+    <!-- ①注册ConversionService -->
+    <bean id="conversionService" class="org.springframework.format.support.FormattingConversionServiceFactoryBean">
+        <property name="converters">
+            <set>
+                <bean class="com.yeahsir.convertor.StringToPhoneNumberConverter"/>
+                <bean class="com.yeahsir.convertor.MyStringToDateConverter" />
+            </set>
+        </property>
+    </bean>
+
+    <!-- ②使用ConfigurableWebBindingInitializer注册conversionService -->
+    <bean id="webBindingInitializer" class="org.springframework.web.bind.support.ConfigurableWebBindingInitializer">
+        <property name="conversionService" ref="conversionService"/>
+        <property name="validator" ref="validator"/>
+    </bean>
+
+    <bean id="messageSource" class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
+        <property name="basename" value="classpath:messages"/>
+        <property name="fileEncodings" value="utf-8"/>
+        <property name="cacheSeconds" value="120"/>
+    </bean>
+
+    <!-- 以下 validator  ConversionService 在使用 mvc:annotation-driven 会 自动注册-->
+    <bean id="validator" class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean">
+        <property name="providerClass"  value="org.hibernate.validator.HibernateValidator"/>
+        <!-- 如果不加默认到 使用classpath下的 ValidationMessages.properties -->
+        <property name="validationMessageSource" ref="messageSource"/>
+    </bean>
+
+    <context:annotation-config />
+    <context:component-scan base-package="com.yeahsir" />
+</beans>

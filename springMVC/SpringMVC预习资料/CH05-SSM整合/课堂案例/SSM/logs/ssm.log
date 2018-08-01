@@ -1,0 +1,14 @@
+[INFO] [2017-07-18 10:23:17][org.springframework.beans.factory.xml.XmlBeanDefinitionReader]Loading XML bean definitions from URL [file:/D:/IdeaProjects/java01class/SSM/target/classes/spring-mybatis.xml]
+[INFO] [2017-07-18 10:23:18][org.springframework.context.support.GenericApplicationContext]Refreshing org.springframework.context.support.GenericApplicationContext@2a2d45ba: startup date [Tue Jul 18 10:23:18 CST 2017]; root of context hierarchy
+[ERROR] [2017-07-18 10:23:19][com.alibaba.druid.pool.DruidAbstractDataSource]maxIdle is deprecated
+[INFO] [2017-07-18 10:23:19][com.alibaba.druid.pool.DruidDataSource]{dataSource-1} inited
+[INFO] [2017-07-18 10:23:20][com.whcs.mytest.TestMyBatis]{"uaddress":"武大科技园微商大厦B座4楼","uage":18,"uid":1,"uname":"yeahsir","upwd":"123456"}
+[INFO] [2017-07-18 10:23:20][org.springframework.context.support.GenericApplicationContext]Closing org.springframework.context.support.GenericApplicationContext@2a2d45ba: startup date [Tue Jul 18 10:23:18 CST 2017]; root of context hierarchy
+[INFO] [2017-07-18 10:23:20][com.alibaba.druid.pool.DruidDataSource]{dataSource-1} closed
+[INFO] [2017-07-18 10:33:28][org.springframework.beans.factory.xml.XmlBeanDefinitionReader]Loading XML bean definitions from URL [file:/D:/IdeaProjects/java01class/SSM/target/classes/spring-mybatis.xml]
+[INFO] [2017-07-18 10:33:29][org.springframework.context.support.GenericApplicationContext]Refreshing org.springframework.context.support.GenericApplicationContext@2a2d45ba: startup date [Tue Jul 18 10:33:29 CST 2017]; root of context hierarchy
+[ERROR] [2017-07-18 10:33:30][com.alibaba.druid.pool.DruidAbstractDataSource]maxIdle is deprecated
+[INFO] [2017-07-18 10:33:30][com.alibaba.druid.pool.DruidDataSource]{dataSource-1} inited
+[INFO] [2017-07-18 10:33:31][com.whcs.mytest.TestMyBatis]{"uaddress":"武大科技园微商大厦B座4楼","uage":18,"uid":1,"uname":"yeahsir","upwd":"123456"}
+[INFO] [2017-07-18 10:33:31][org.springframework.context.support.GenericApplicationContext]Closing org.springframework.context.support.GenericApplicationContext@2a2d45ba: startup date [Tue Jul 18 10:33:29 CST 2017]; root of context hierarchy
+[INFO] [2017-07-18 10:33:31][com.alibaba.druid.pool.DruidDataSource]{dataSource-1} closed

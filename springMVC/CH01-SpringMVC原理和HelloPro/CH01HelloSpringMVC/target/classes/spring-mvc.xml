@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <!--方式1-->
+    <!-- HandlerMapping -->
+    <!--<bean class="org.springframework.web.servlet.handler.BeanNameUrlHandlerMapping"/>-->
+    <!-- HandlerAdapter -->
+    <!--<bean class="org.springframework.web.servlet.mvc.SimpleControllerHandlerAdapter"/>-->
+
+    <!--方式2:  3.1之前-->
+    <!--Spring3.1之前的注解 HandlerMapping-->
+    <!--<bean class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping"/>-->
+    <!--Spring3.1之前的注解 HandlerAdapter-->
+    <!--<bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter"/>-->
+
+    <!--方式3:  3.1之后-->
+    <!-- 3.x version -->
+    <!-- HandlerMapping 托管映射处理器 RequestMappingHandlerMapping -->
+    <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping"/>
+    <!-- HandlerAdapter 托管适配处理器 RequestMappingHandlerAdapter-->
+    <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter"/>
+
+    <!-- ViewResolver 托管视图解析器-->
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <!--前缀-->
+        <property name="prefix" value="/WEB-INF/jsp/" />
+        <!--后缀-->
+        <property name="suffix" value=".jsp" />
+        <!--视图支持类，视图支持JSTL-->
+        <property name="viewClass" value="org.springframework.web.servlet.view.JstlView" />
+    </bean>
+
+    <!--ID:是我们访问的路径-->
+    <!--<bean id="/shwoMsg" class="com.yeahsir.controller.HelloController" />-->
+
+    <!--开启注解扫描-->
+    <context:annotation-config />
+    <!--扫描的包-->
+    <context:component-scan base-package="com.yeahsir" />
+</beans>

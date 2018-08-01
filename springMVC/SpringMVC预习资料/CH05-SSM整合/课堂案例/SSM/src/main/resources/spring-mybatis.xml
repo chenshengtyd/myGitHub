@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:utils="http://www.springframework.org/schema/util" xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <!-- 自动扫描 -->
+    <context:component-scan base-package="com.whcs" />
+    <!-- 引入配置文件 -->
+    <!--Spring的方式进行引入我们的属性文件-->
+    <!--<bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="location" value="classpath:mysql.properties" />
+    </bean>-->
+    <!--通过utils命令空间进行引入属性文件-->
+    <utils:properties location="classpath*:mysql.properties" id="mysql" />
+
+
+    <!--1.配置一个数据源-->
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource">
+        <property name="url" value="#{mysql.url}"/>
+        <property name="driverClassName" value="#{mysql.driver}"/>
+        <property name="username" value="#{mysql.username}"/>
+        <property name="password" value="#{mysql.password}"/>
+
+        <!-- 初始化连接大小 -->
+        <property name="initialSize" value="#{mysql.initialSize}"/>
+        <!-- 连接池最大数量 -->
+        <property name="maxActive" value="#{mysql.maxActive}"/>
+        <!-- 连接池最大空闲 -->
+        <property name="maxIdle" value="#{mysql.maxActive}"/>
+        <!-- 连接池最小空闲 -->
+        <property name="minIdle" value="#{mysql.minIdle}" />
+        <!-- 获取连接最大等待时间 -->
+        <property name="maxWait" value="#{mysql.maxWait}" />
+    </bean>
+
+    <!--Mapping文件-->
+    <!-- spring和MyBatis完美整合，不需要mybatis的配置映射文件 -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource" />
+        <!-- 自动扫描mapping.xml文件 -->
+        <property name="mapperLocations" value="classpath:com/whcs/mapping/*.xml"></property>
+    </bean>
+
+    <!--Dao接口-->
+    <!-- DAO接口所在包名，Spring会自动查找其下的类 -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.whcs.dao" />
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"></property>
+    </bean>
+
+    <!-- (事务管理)transaction manager, use JtaTransactionManager for global tx -->
+    <!--<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource" />
+    </bean>-->
+    <!-- (事务管理)transaction manager, use JtaTransactionManager for global tx -->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+    <tx:annotation-driven transaction-manager="transactionManager" />
+    <aop:config>
+        <aop:pointcut expression="execution(* com.whcs.service..*.*(..))" id="productServiceMethods" />
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="productServiceMethods" />
+    </aop:config>
+    <tx:advice id="txAdvice" transaction-manager="transactionManager">
+        <tx:attributes>
+            <tx:method name="save*" propagation="REQUIRED" />
+            <tx:method name="delete*" propagation="REQUIRED" />
+            <tx:method name="modify*" propagation="REQUIRED" />
+            <tx:method name="insert*" propagation="REQUIRED" />
+            <tx:method name="remove*" propagation="REQUIRED" />
+            <tx:method name="update*" propagation="REQUIRED" />
+            <tx:method name="find*" propagation="REQUIRED" read-only="true" />
+            <tx:method name="get*" propagation="REQUIRED" read-only="true" />
+            <tx:method name="*" />
+        </tx:attributes>
+    </tx:advice>
+</beans>

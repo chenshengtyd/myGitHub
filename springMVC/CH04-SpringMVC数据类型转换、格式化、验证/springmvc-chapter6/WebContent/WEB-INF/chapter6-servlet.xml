@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+
+   
+    <!--Spring3.1之前的注解 HandlerMapping -->
+<!--     <bean class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping"/> -->
+    
+    <!--Spring3.1之前的注解 HandlerAdapter -->
+<!--     <bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter"> -->
+        <!--线程安全的访问session-->
+<!--         <property name="synchronizeOnSession" value="true"/> -->
+<!--     </bean>  -->
+    
+ 
+    <!--Spring3.1开始的注解 HandlerMapping -->
+    <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping"/> 
+    
+    <!--Spring3.1开始的注解 HandlerAdapter -->
+    <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter">
+        <!--线程安全的访问session-->
+        <property name="synchronizeOnSession" value="true"/>
+    </bean> 
+     
+    
+    
+    <!-- ViewResolver -->
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="viewClass" value="org.springframework.web.servlet.view.JstlView"/>
+        <property name="prefix" value="/WEB-INF/jsp/"/>
+        <property name="suffix" value=".jsp"/>
+    </bean>
+    
+    <!-- 处理器 -->
+    <bean class="cn.javass.chapter6.web.controller.HelloWorldController"/>
+    <bean class="cn.javass.chapter6.web.controller.HelloWorldController2"/>
+    
+    <bean class="cn.javass.chapter6.web.controller.mapping.MappingController"/>
+    
+    <bean class="cn.javass.chapter6.web.controller.method.RequestMethodController"/>
+    
+    <bean class="cn.javass.chapter6.web.controller.SuccessController"/>
+    <bean class="cn.javass.chapter6.web.controller.CancelController"/>
+    
+    <bean class="cn.javass.chapter6.web.controller.parameter.RequestParameterController1"/>
+    <bean class="cn.javass.chapter6.web.controller.parameter.RequestParameterController2"/>
+    <bean class="cn.javass.chapter6.web.controller.parameter.RequestParameterController3"/>
+
+    <bean class="cn.javass.chapter6.web.controller.header.RequestHeaderController"/>
+    
+    <bean class="cn.javass.chapter6.web.controller.consumesproduces.ConsumesController"/>
+    <bean class="cn.javass.chapter6.web.controller.consumesproduces.ProducesController"/>
+    
+    <bean class="cn.javass.chapter6.web.controller.consumesproduces.contenttype.RequestContentTypeController"/>
+    <bean class="cn.javass.chapter6.web.controller.consumesproduces.contenttype.ResponseContentTypeController"/>
+    
+    
+    <bean class="cn.javass.chapter6.web.controller.consumesproduces.ProducesPrecedenceController1"/>
+    <bean class="cn.javass.chapter6.web.controller.consumesproduces.ProducesPrecedenceController2"/>
+    <bean class="cn.javass.chapter6.web.controller.consumesproduces.ProducesPrecedenceController3"/>
+
+    <bean class="cn.javass.chapter6.web.controller.consumesproduces.NarrowController"/>
+    
+    
+    <bean class="cn.javass.chapter6.web.controller.paramtype.MethodParamTypeController"/>
+    <bean class="cn.javass.chapter6.web.controller.paramtype.RequestParamController"/>
+    <bean class="cn.javass.chapter6.web.controller.paramtype.PathVariableTypeController"/>
+    <bean class="cn.javass.chapter6.web.controller.paramtype.CookieValueTypeController"/>
+    <bean class="cn.javass.chapter6.web.controller.paramtype.HeaderValueTypeController"/>
+    <bean class="cn.javass.chapter6.web.controller.paramtype.ModelAttributeTypeController"/>
+    <bean class="cn.javass.chapter6.web.controller.paramtype.SessionAttributeController"/>
+    <bean class="cn.javass.chapter6.web.controller.paramtype.WizardFormController">
+        <property name="pageViews">
+            <list>
+                <value>wizard/baseInfo</value>
+                <value>wizard/schoolInfo</value>
+                <value>wizard/workInfo</value>
+            </list>
+        </property>
+        <property name="successView" value="redirect:/success"/>
+        <property name="cancelView" value="redirect:/cancel"/>
+    </bean>
+    <bean class="cn.javass.chapter6.web.controller.paramtype.SpELValueTypeController"/>
+    <bean class="cn.javass.chapter6.web.controller.paramtype.RedirectAttributesTypeController"/>
+</beans>
