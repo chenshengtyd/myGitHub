@@ -1,0 +1,155 @@
+准备：
+	<dependency>
+		<groupId>junit</groupId>
+		<artifactId>junit</artifactId>
+		<version>4.12</version>
+		<scope>test</scope>
+	</dependency>
+	<!--Spring所需Jar-->
+	<dependency>
+		<groupId>org.springframework</groupId>
+		<artifactId>spring-context</artifactId>
+		<version>4.3.8.RELEASE</version>
+	</dependency>
+	<!--Log4j所需Jar-->
+	<dependency>
+		<groupId>log4j</groupId>
+		<artifactId>log4j</artifactId>
+		<version>1.2.17</version>
+	</dependency>
+	<!--AOP所需Jar-->
+	<dependency>
+		<groupId>org.aspectj</groupId>
+		<artifactId>aspectjrt</artifactId>
+		<version>1.8.10</version>
+	</dependency>
+	<dependency>
+		<groupId>org.aspectj</groupId>
+		<artifactId>aspectjweaver</artifactId>
+		<version>1.8.10</version>
+	</dependency>
+	<!--Servlet所需Jar-->
+	<dependency>
+		<groupId>javax.servlet</groupId>
+		<artifactId>javax.servlet-api</artifactId>
+		<version>3.1.0</version>
+		<scope>provided</scope>
+	</dependency>
+	<!--spring集成Junit-->
+	<dependency>
+		<groupId>org.springframework</groupId>
+		<artifactId>spring-test</artifactId>
+		<version>3.2.4.RELEASE</version>
+		<scope>provided</scope>
+	</dependency>
+
+
+一、Spring中引用属性文件
+	1.数据库连接信息写在属性文件中
+	2.采用PropertyPlaceholderConfigurer可以引入属性文件，在Spring配置文件中采用诸如${url}的方式引用属性值
+	3.
+	<!-- 引入properties文件 -->
+	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="location">
+			<value>classpath:database.properties</value>
+		</property>
+	</bean>
+	<!-- 随便编写一个类，给一个属性message和一个方法输出message -->
+	<bean name="test" class="com.whcs.controller.Test" p:message="${message}" />
+	<!-- 编写一个Action进行访问 -->
+	private String message;
+
+    public void show(){
+        System.out.println(message);
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+	
+二、使用JNDI数据源
+	1.通过JNDI从服务器容器中获取DataSource资源
+		在服务器环境中配置数据源
+		在Spring配置文件引用JNDI资源
+	2.
+		<bean id="dataSource" class="org.springframework.jndi.JndiObjectFactoryBean">
+			<!--通过jndiName指定引用的JNDI数据源名称 -->
+			<property name="jndiName">
+				<value>java:comp/env/jdbc/smbms</value>
+			</property>
+		</bean>
+
+三、Spring中Bean的作用域
+	3.1.
+	作用域								说      明
+	singleton			默认值。Spring以单例模式创建Bean的实例，即容器中该Bean的实例只有一个
+	prototype			每次从容器中获取Bean时，都会创建一个新的实例
+	request				用于Web应用环境，针对每次HTTP请求都会创建一个实例
+	session				用于Web应用环境，同一个会话共享同一个实例，不同的会话使用不同的实例
+	global session		仅在Portlet的Web应用中使用，同一个全局会话共享一个实例。对于非Portlet环境，等同于session
+		仅适用于WebApplicationContext环境
+	
+	3.2.案例一：
+		<!-- 指定Bean的作用域为prototype -->
+		<bean id="……" class="……" scope="prototype">
+			……
+		</bean>
+	
+	3.3.singleton与prototype区别：
+		<bean id="user" class="cn.smbms.pojo.User" scope="singleton"/>
+			每次获取到的User对象都是一个
+		<bean id="user" class="cn.smbms.pojo.User" scope="prototype"/>
+			每次获取到的User对象都是一个新实例化后的User对象
+	
+	3.4.使用注解指定Bean的作用域
+		@Scope("prototype") 
+		@Service("userService") 
+		public class UserServiceImpl implements UserService {
+			// 省略其他代码
+		}
+
+四、Spring自动装配
+	1.什么是自动装配
+		Spring可以根据属性类型、名称等自动进行注入
+		案例：
+		<!-- 配置业务Bean并注入DAO实例 -->
+		<bean id="userService" class="cn.smbms.service.user.UserServiceImpl">
+			<property name="userMapper" ref="userMapper" />
+		</bean>
+	2.如何使用自动装配
+		设置<bean>元素的autowire属性
+		<!-- 配置业务Bean，根据属性名称自动装配 -->
+		<bean id="userService" class="cn.smbms.service.user.UserServiceImpl" autowire="byName" />
+	3.Spring提供的4种自动装配类型
+		取值			说明
+		no				默认值。Spring 默认不进行自动装配，必须显式指定依赖对象 
+		byName			根据属性名自动装配。Spring 自动查找与属性名相同的id，如果找到，则自动注入，否则什么都不做
+		byType			根据属性的类型自动装配。Spring 自动查找与属性类型相同的Bean，如果刚好找到唯一的那个，则自动注入；如果找到多个与属性类型相同的Bean，则抛出异常；如果没找到，就什么也不做
+		constructor		和byType 类似，不过它针对构造方法。如果 Spring 找到一个Bean和构造方法的参数类型相匹配，则通过构造注入该依赖对象；如果找不到，将抛出异常 
+	4.问题：每个Bean都需要设置autowire属性，较繁琐
+	  解答：可以为<beans>元素设置default-autowire属性，影响全局
+			<bean>节点上autowire的设置可以覆盖全局设置
+		<beans …… default-autowire="byName">
+			<!--省略其他代码-->
+		</beans>
+	  注意：自动装配使得配置文件可以非常简洁，但同时也造成组件之间的依赖关系不明确，容易引发一些潜在的错误，在实际项目中要谨慎使用   
+
+五、拆分配置文件—拆分策略
+	1.为什么需要拆分配置文件
+		项目规模变大，配置文件可读性、可维护性差
+		团队开发时，多人修改同一配置文件，易发生冲突
+	2.拆分策略
+		公用配置+每个系统模块一个单独配置文件（包含DAO、Service、Web控制器）
+		公用配置+DAO Bean配置+业务逻辑Bean配置+Web控制器配置
+		两种策略各有特色，适用于不同场合
+	3.引入拆分后的配置文件，两种方法
+		1.利用ClassPathXmlApplicationContext 的重载方法可以配置多个配置文件，用逗号隔开或者使用通配符
+			比如：public ClassPathXmlApplicationContext( String  configLocation );
+				  public ClassPathXmlApplicationContext( String… configLocations );
+		2.使用<import  resource="xxx.xml"/>方式
+
+六、总结

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context" xmlns:p="http://www.springframework.org/schema/p"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <!--传统Bean注册-->
+    <!--<bean id="userService" class="com.whcs.service.impl.UserService" />-->
+    <bean id="user" class="com.whcs.entity.User">
+        <property name="username">
+            <value>yeahsir</value>
+        </property>
+        <property name="password">
+            <value>123456</value>
+        </property>
+    </bean>
+    <bean id="testEntity" class="com.whcs.entity.TestEntity">
+        <!-- 使用<![CDATA[]]>标记处理XML特 殊字符 -->
+        <property name="specialCharacter1">
+            <value>
+                <![CDATA[P&G]]>
+            </value>
+        </property>
+        <!-- 把XML特殊字符替换为实体引用 -->
+        <property name="specialCharacter2">
+            <value>P&amp;G</value>
+        </property>
+        <!--JavaBean-->
+        <property name="innerBean">
+            <ref bean="user" />
+        </property>
+        <property name="list">
+            <list>
+                <value>AAA</value>
+                <value>BBB</value>
+                <value>CCC</value>
+            </list>
+        </property>
+        <property name="array">
+            <array>
+                <value>AAA</value>
+                <value>BBB</value>
+                <value>CCC</value>
+            </array>
+        </property>
+        <property name="set">
+            <set>
+                <value>AAA</value>
+                <value>BBB</value>
+                <value>CCC</value>
+            </set>
+        </property>
+        <property name="map">
+            <map>
+                <entry key="age" value="21" />
+                <entry key="address" value="Wuhan" />
+            </map>
+        </property>
+        <property name="props">
+            <props>
+                <prop key="mysql">root</prop>
+                <prop key="oracle">scott</prop>
+                <prop key="sqlserver">administrator</prop>
+            </props>
+        </property>
+        <!--注入空字符串-->
+        <property name="emptyValue">
+            <value></value>
+        </property>
+        <!--注入null值-->
+        <property name="nullValue">
+            <value />
+        </property>
+    </bean>
+    <!--P-->
+    <bean id="userDao" class="com.whcs.dao.impl.UserDao" p:username="yeahsir" p:user-ref="user" p:testEntity-ref="testEntity" />
+
+    <!--注解的方式-->
+    <!--开启扫描注解-->
+    <!--<context:annotation-config />-->
+    <!--扫描包的范围-->
+    <!--<context:component-scan base-package="com.whcs" />-->
+</beans>

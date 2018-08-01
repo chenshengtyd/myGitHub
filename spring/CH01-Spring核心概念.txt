@@ -1,0 +1,214 @@
+准备工作：
+	<dependency>
+		<groupId>junit</groupId>
+		<artifactId>junit</artifactId>
+		<version>4.12</version>
+		<scope>test</scope>
+	</dependency>
+	<dependency>
+		<groupId>org.springframework</groupId>
+		<artifactId>spring-context</artifactId>
+		<version>3.2.4.RELEASE</version>
+	</dependency>
+	<dependency>
+		<groupId>log4j</groupId>
+		<artifactId>log4j</artifactId>
+		<version>1.2.17</version>
+	</dependency>
+	<dependency>
+		<groupId>org.aspectj</groupId>
+		<artifactId>aspectjrt</artifactId>
+		<version>1.8.10</version>
+	</dependency>
+	<dependency>
+		<groupId>org.aspectj</groupId>
+		<artifactId>aspectjweaver</artifactId>
+		<version>1.8.10</version>
+	</dependency>
+	
+需要经常浏览的
+	http://www.iteye.com/
+	http://www.csdn.net/
+	http://tool.oschina.net/apidocs
+
+一、基本概念了解
+	1.1.Java企业级框架
+		企业级系统特点：
+			大规模：用户数量多、数据规模大、功能众多
+			性能和安全要求高
+			业务复杂
+			灵活应变
+		Java技术如何应对
+			EJB-->>Spring
+	1.2.Spring
+		Spring
+			轻量级框架, Java EE的春天,当前主流框架
+		目标
+			使现有技术更加易用,推进编码最佳实践
+		内容
+			IoC容器
+			AOP实现
+			数据访问支持
+				简化JDBC/ORM 框架
+				声明式事务
+			Web集成
+	1.3.Spring体系结构
+		PPT图解说
+	1.4.Spring设计理念
+	1.5.Spring 两大核心技术
+		控制反转(IoC：Inversion of Control ) /依赖注入(DI：Dependency Injection )
+		面向切面编程(AOP：Aspect Oriented Programming)
+	1.6.Spring的优点
+		低侵入式设计
+		独立于各种应用服务器
+		依赖注入特性将组件关系透明化，降低了耦合度
+		面向切面编程特性允许将通用任务进行集中式处理
+		与第三方框架的良好整合
+
+二、控制反转(IOC)/依赖注入(DI)
+	2.1.将组件对象的控制权从代码本身转移到外部容器
+		组件化的思想：分离关注点，使用接口，不再关注实现
+		依赖的注入：将组件的构建和使用分开
+	2.2.Hello,Spring(代码演示)
+		步骤
+			添加Spring到项目中
+			编写配置文件
+			编写代码获取HelloSpring实例
+	2.3.依赖注入综合示例（代码演示）
+		打印机功能的实现依赖于墨盒和纸张
+		步骤
+			1.定义墨盒和纸张的接口标准
+				//墨盒接口
+				public interface Ink {
+					public String getColor(int r, int g, int b);
+				}
+				//纸张接口
+				public interface Pager {
+					public String getContent(String content);
+				}
+			2.使用接口标准开发打印机
+				//实现Ink接口
+				public String getColor(int r, int g, int b) {
+					Color color = new Color(r, g, b);
+					String s = Integer.toHexString(color.getRGB());
+					System.out.println(s);
+					return "#" + s.substring(2);
+				}
+				//实现pager接口
+				 public String getContent(String content) {
+					String c1 = content.substring(0,10);
+					String c2 = content.substring(10,20);
+					return c1 + "\n" + c2;
+				}
+			3.组装打印机
+				//打印类
+				private Ink ink = null;
+				private Pager pager = null;
+
+				public String print(){
+					String result = "";
+					result = "使用打印颜色=" + ink.getColor(255,0,0) + "\n";
+					result += "打印内容：\n" + pager.getContent("1234567890abcdefghij");
+					return result;
+				}
+				//省略getter和setter
+			4.配置bean信息
+				<bean name="ink" class="com.whcs.service.impl.InkImpl" />
+				<bean name="pager" class="com.whcs.service.impl.PagerImpl" />
+				<bean name="print" class="com.whcs.service.impl.Print">
+					<property name="ink" ref="ink" />
+					<property name="pager" ref="pager" />
+				</bean>
+			5.运行打印机
+				@Test
+				public void testPrint(){
+					ApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:applicationContext.xml");
+					Print print = (Print) applicationContext.getBean("print");
+					System.out.println(print.print());
+				}
+三、面向切面编程（AOP）
+	3.1.AOP的目标：让我们可以“专心做事”
+	3.2.AOP原理
+		将复杂的需求分解出不同方面，将散布在系统中的公共功能集中解决
+		采用代理机制组装起来运行，在不改变原程序的基础上对代码段进行增强处理，增加新的功能
+		
+	3.3.AOP相关术语
+		增强处理（Advice）
+			前置增强
+			后置增强
+			环绕增强、异常抛出增强、最终增强等类型
+		切入点（Pointcut）
+		连接点（Join Point）
+		切面（Aspect）
+		目标对象（Target object）
+		AOP代理（AOP proxy）
+		织入（Weaving）
+		
+	3.4.表达式匹配规则举例  3
+		public * addNewUser(entity.User)： “*”表示匹配所有类型的返回值。
+		public void *(entity.User)： “*”表示匹配所有方法名。
+		public void addNewUser(..)： “..”表示匹配所有参数个数和类型。
+		* com.service.*.*(..)：匹配com.service包下所有类的所有方法。
+		* com.service..*.*(..)：匹配com.service包及其子包下所有类的所有方法
+
+	3.5.怎样使用AOP?使用Spring AOP实现日志输出
+		实现步骤:
+			1.在项目中添加Spring AOP的jar文件
+					<dependency>
+						<groupId>org.aspectj</groupId>
+						<artifactId>aspectjrt</artifactId>
+						<version>1.8.10</version>
+					</dependency>
+					<dependency>
+						<groupId>org.aspectj</groupId>
+						<artifactId>aspectjweaver</artifactId>
+						<version>1.8.10</version>
+					</dependency>
+			2.编写前置增强和后置增强实现日志功能
+				public class UserServiceLogger {
+					private static final Logger log = Logger.getLogger(UserServiceLogger.class);
+
+					public void before(JoinPoint jp){
+						StringBuffer sb = new StringBuffer();
+						sb.append("调用");
+						sb.append(jp.getTarget() + "的" + jp.getSignature().getName() + "方法.");
+						sb.append("传入的参数是：" +  Arrays.toString(jp.getArgs()).toString());
+						log.info(sb.toString());
+					}
+
+					public void afterReturning(JoinPoint jp, Object result){
+						StringBuffer sb = new StringBuffer();
+						sb.append("调用");
+						sb.append(jp.getTarget() + "的" + jp.getSignature().getName() + "方法.");
+						sb.append("返回的参数是：" +  result);
+						log.info(sb.toString());
+					}
+				}
+			3.编写Enity、Dao、Service接口和实现方法
+			3.编写Spring配置文件，对业务方法进行增强处理
+				<bean name="userDao" class="com.whcs.dao.impl.UserDaoImpl" />
+				<bean name="UserService" class="com.whcs.service.impl.UserServiceImpl">
+					<property name="userDao" ref="userDao"/>
+				</bean>
+				<bean name="userServiceLogger" class="com.whcs.aop.UserServiceLogger" />
+				<!--配置切面-->
+				<aop:config>
+					<!-- 定义切入点 -->
+					<aop:pointcut id="pointcut" expression="execution(* com.whcs.service.*.*(..))" />
+					<!-- 引用包含增强方法的Bean -->
+					<aop:aspect ref="userServiceLogger">
+						<!-- 将before()方法定义为前置增强并引用pointcut切入点 -->
+						<aop:before method="before" pointcut-ref="pointcut"></aop:before>
+						<!-- 将afterReturning()方法定义为后置增强并引用pointcut切入点 -->
+						<!-- 通过returning属性指定为名为result的参数注入返回值 -->
+						<aop:after-returning method="afterReturning" pointcut-ref="pointcut" returning="result" />
+					</aop:aspect>
+				</aop:config>
+			4.编写代码获取带有增强处理的业务对象、测试
+				@Test
+				public void testAop(){
+					ApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:applicationContext.xml");
+					UserService userService = (UserService) applicationContext.getBean("UserService");
+					userService.saveDao(new User("admin", "123123"));
+				}
+四、总结

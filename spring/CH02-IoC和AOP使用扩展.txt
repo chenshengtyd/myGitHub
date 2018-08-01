@@ -1,0 +1,331 @@
+一、构造注入
+	步骤：
+		1.将原来UserServiceImpl类中属性的getter和setter方法去掉，直接生成带参数的构造方法
+		2.在spring配置文件中进行配置相关代码
+			<bean id="userDao" class="dao.impl.UserDaoImpl" />
+			<bean id="userService" class="service.impl.UserServiceImpl">         	
+				<constructor-arg>
+					<ref bean="userDao" />
+				</constructor-arg>
+			</bean>
+		3.编写测试代码
+
+二、使用p命名空间注入属性值
+	2.1.p 命名空间的特点：使用属性而不是子元素的形式配置Bean的属性，从而简化了配置代码
+		对于直接量（基本数据类型、字符串）属性：p:属性名="属性值"
+		对于引用Bean的属性：p:属性名-ref="Bean的id"
+	2.2.使用前要先要在Spring配置文件中引入p命名空间
+		xmlns:p="http://www.springframework.org/schema/p"
+	2.3.使用p命名空间注入属性值
+		<bean id="user" class="entity.User" p:age="23" p:username="张三" p:email="zhangsan@xxx.com" />
+		<bean id="userService" class="service.impl.UserServiceImpl" p:dao-ref="userDao" />
+		
+		调用的代码：
+			UserService service = (UserService) ctx.getBean("userService");
+			User user = (User) ctx.getBean("user");
+			service.xxx(user);
+三、注入不同数据类型
+	1.注入直接量				使用<value>标签实现,注意特殊字符的处理
+		<!-- 使用<![CDATA[]]>标记处理XML特 殊字符 -->
+		<property name="specialCharacter1">
+			<value><![CDATA[P&G]]></value>
+		</property>
+		<!-- 把XML特殊字符替换为实体引用 -->
+		<property name="specialCharacter2">
+			<value>P&amp;G</value>
+		</property>
+	2.引用Bean				使用<ref>标签实现,注意bean属性和local属性的区别
+	3.使用内部Bean			<property name="dao">或<bean class="dao.impl.UserDaoImpl"/></property>
+		<!-- 定义内部Bean -->
+		<property name="innerBean">
+			<bean class="entity.User">
+				<property name="username">
+					<value>Mr. Inner</value>
+				</property>
+			</bean>
+		</property>
+	4.注入集合类型的属性		分别使用<list>、<set>、<map>、<props>标签实现
+		<!-- 注入List类型 -->
+		<property name="list">
+			<list>
+				<!-- 定义List中的元素 -->
+				<value>足球</value>
+				<value>篮球</value>
+			</list>
+		</property>
+		<!-- 注入数组类型 -->
+		<property name="array">
+			<array>
+				<!-- 定义数组中的元素 -->
+				<value>足球</value>
+				<value>篮球</value>
+			</array>
+		</property>
+		<!-- 注入Set类型 -->
+		<property name="set">
+			<set>
+				<!-- 定义Set或数组中的元素 -->
+				<value>足球</value>
+				<value>篮球</value>
+			</set>
+		</property>
+		<!-- 注入Map类型 -->
+		<property name="map">
+			<map>
+				<!-- 定义Map中的键值对 -->
+				<entry>
+					<key>
+						<value>football</value>
+					</key>
+					<value>足球</value>
+				</entry>
+				<entry>
+					<key>
+						<value>basketball</value>
+					</key>
+					<value>篮球</value>
+				</entry>
+			</map>
+		</property>
+		<!-- 注入Properties类型 -->
+		<property name="props">
+			<props>
+				<!-- 定义Properties中的键值对 -->
+				<prop key="football">足球</prop>
+				<prop key="basketball">篮球</prop>
+			</props>
+		</property>
+	5.注入null 和空字符串值	使用<null/>注入null 值，使用<value></value>注入空字符串值
+		<!-- 注入空字符串值 -->
+		<property name="emptyValue">
+			<value></value>
+		</property>
+		<!-- 注入null值 -->
+		<property name="nullValue">
+			<null/>
+		</property>
+
+常用增强处理类型
+	增强处理类型	特  点
+	Before			前置增强处理，在目标方法前织入增强处理
+	AfterReturning	后置增强处理，在目标方法正常执行（不出现异常）后织入增强处理
+	AfterThrowing	异常增强处理，在目标方法抛出异常后织入增强处理
+	After			最终增强处理，不论方法是否抛出异常，都会在目标方法最后织入增强处理
+	Around			环绕增强处理，在目标方法的前后都可以织入增强处理
+	
+	Around	Before	AfterThrowing	AfterReturning	After  Around 
+	Around	Before	AfterThrowing	AfterReturning	Around After
+		
+四、异常抛出增强
+	1.异常抛出增强的特点
+		在目标方法抛出异常时织入增强处理
+		可拔插的异常处理方案
+	2.<aop:after-throwing>元素：定义异常抛出增强
+		1.配置文件
+			<aop:aspect ref="theLogger">
+				<aop:after-throwing method="afterThrowing" pointcut-ref="pointcut" throwing="e" />
+			</aop:aspect>
+		2.AOP类方法
+			public void afterThrowing(JoinPoint jp, RuntimeException e) {
+				log.error(jp.getSignature().getName() + " 方法发生异常：" + e);
+			}
+		3.测试
+			正常编写
+
+五、最终增强
+	1.最终增强的特点
+		无论方法是否抛出异常，都会在目标方法最后织入增强处理，即：该增强都会得到执行
+		类似于异常处理机制中finally块的作用，一般用于释放资源
+		可以为各功能模块提供统一的，可拔插的处理方案
+	2.<aop:after>元素：定义最终增强
+		1.AOP类方法
+			public void afterLogger(JoinPoint jp) {
+				log.info(jp.getSignature().getName() + " 方法结束执行。");
+			}
+		2.配置文件
+			<!-- 引用包含增强方法的Bean -->
+			<aop:aspect ref="theLogger">
+				<!-- 将afterLogger()方法定义为最终增强并引用pointcut切入点 -->
+				<aop:after method="afterLogger" pointcut-ref="pointcut"/>
+			</aop:aspect>
+		3.测试代码
+			正常编写
+
+六、环绕增强
+	1.环绕增强的特点
+		目标方法前后都可织入增强处理
+		功能最强大的增强处理
+		可获取或修改目标方法的参数、返回值，可对它进行异常处理，甚至可以决定目标方法是否执行
+	2.<aop:around>元素：定义环绕增强
+		1.AOP类方法
+			public Object aroundLogger(ProceedingJoinPoint jp) throws Throwable {
+				log.info("调用 " + jp.getTarget() + " 的 " + jp.getSignature().getName() + " 方法。方法入参："
+						+ Arrays.toString(jp.getArgs()));
+				try {
+					Object result = jp.proceed();
+					log.info("调用 " + jp.getTarget() + " 的 " + jp.getSignature().getName() + " 方法。方法返回值：" + result);
+					return result;
+				} catch (Throwable e) {
+					log.error(jp.getSignature().getName() + " 方法发生异常：" + e);
+					throw e;
+				} finally {
+					log.info(jp.getSignature().getName() + " 方法结束执行。");
+				}
+			}
+		2.配置文件
+			<!-- 引用包含增强方法的Bean -->
+			<aop:aspect ref="theLogger">
+				<!-- 将aroundLogger()方法定义为环绕增强并引用pointcut切入点 -->
+				<aop:around method="aroundLogger" pointcut-ref="pointcut"/>
+			</aop:aspect>
+		3.测试代码
+			正常编写
+		
+Spring AOP配置元素
+	AOP配置元素						描  述
+	<aop:config>					AOP配置的顶层元素，大多数的<aop:*>元素必须包含在<aop:config>元素内
+		<aop:pointcut>				定义切点
+		<aop:aspect>				定义切面
+		   <aop:after>				定义最终增强（不管被通知的方法是否执行成功）
+		   <aop:after-returning>	定义after-returning增强
+		   <aop:after-throwing>		定义after-throwing增强
+		   <aop:around>				定义环绕增强
+		   <aop:before>				定义前置增强
+	<aop:aspectj-autoproxy>			启动@AspectJ注解驱动的切面
+
+
+七、使用注解实现IoC
+	1.注解方式将Bean的定义信息和Bean实现类结合在一起，Spring提供的注解有
+		@Component：实现Bean组件的定义
+		@Repository	：用于标注DAO类
+		@Service	：用于标注业务类
+		@Controller	：用于标注控制器类
+
+		案例：
+			与在XML配置文件中编写
+				<bean id="userDao" class="dao.impl.UserDaoImpl" /> 
+			等效
+				@Repository("userDao") 
+				public class UserDaoImpl implements UserDao {
+					…
+				}
+	2.使用@Autowired注解实现Bean的自动装配，默认按类型匹配，可以使用@Qualifier指定Bean的名称
+		案例：
+			可以对类的成员变量进行标注
+			@Service("userService") 
+			public class UserServiceImpl implements UserService { 
+				@Autowired
+				@Qualifier("userDao")
+				private UserDao dao; 
+				…… 
+			}
+			
+			也可以对方法的入参进行标注
+			@Service("userService") 
+			public class UserServiceImpl implements UserService { 
+				private UserDao dao;
+				@Autowired
+				public void setDao((@Qualifier("userDao") UserDao dao) {
+				   this.dao = dao;
+				} 
+				…… 
+			}
+	3.使用注解信息启动Spring容器
+		<beans xmlns="http://www.springframework.org/schema/beans"
+			xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+			xmlns:context="http://www.springframework.org/schema/context"
+			xsi:schemaLocation="......
+			http://www.springframework.org/schema/context
+			http://www.springframework.org/schema/context/spring-context-3.2.xsd">
+			
+			<!-- 扫描包中注解标注的类 -->
+			<!-- 指定需要扫描的基类包，多个包可用逗号隔开 -->
+			<context:component-scan base-package="com.whcs.dao" />
+		</beans>
+
+八、使用Java标准注解完成装配
+	使用@Resource注解实现组件装配，默认按名称匹配
+	案例：
+		@Service("userService") 
+		public class UserServiceImpl implements UserService { 
+			//为dao属性注入名为userDao的Bean
+			@Resource(name = "userDao")
+			private UserDao dao; 
+			…… 
+		}
+		
+		@Service("userService") 
+		public class UserServiceImpl implements UserService {
+			//查找名为dao的Bean，并注入给dao属性
+			@Resource
+			private UserDao dao; 
+			…… 
+		}
+九、使用注解定义切面
+	AspectJ
+		面向切面的框架，它扩展了Java语言，定义了AOP 语法，能够在编译期提供代码的织入
+	@AspectJ
+		AspectJ 5新增的功能，使用JDK 5.0 注解技术和正规的AspectJ切点表达式语言描述切面
+		使用@AspectJ，首先要保证所用的JDK 是5.0或以上版本
+	Spring通过集成AspectJ实现了以注解的方式定义增强类，大大减少了配置文件中的工作量
+		利用轻量级的字节码处理框架asm处理@AspectJ中所描述的方法参数名
+			
+	
+	使用注解定义前置增强和后置增强实现日志功能
+		@Aspect
+		@Before
+		@AfterReturning
+	编写Spring配置文件，完成切面织入
+		<aop:aspectj-autoproxy />：启用对于@AspectJ注解的支持
+		
+	实现：
+		1.在spring配置文件中进行配置相关代码
+			<aop:aspectj-autoproxy />
+		2.编写AOP类
+			/**
+			 * 使用注解定义切面
+			 */
+			@Aspect
+			public class UserServiceLogger {
+				private static final Logger log = Logger.getLogger(UserServiceLogger.class);
+
+				@Pointcut("execution(* service.UserService.*(..))")
+				public void pointcut() {
+				}
+
+				@Before("pointcut()")
+				public void before(JoinPoint jp) {
+					log.info("调用 " + jp.getTarget() + " 的 " + jp.getSignature().getName() + " 方法。方法入参："
+							+ Arrays.toString(jp.getArgs()));
+				}
+
+				@AfterReturning(pointcut = "pointcut()", returning = "returnValue")
+				public void afterReturning(JoinPoint jp, Object returnValue) {
+					log.info("调用 " + jp.getTarget() + " 的 " + jp.getSignature().getName() + " 方法。方法返回值：" + returnValue);
+				}
+
+			}
+		3.编写测试类
+			使用@AfterThrowing 注解定义异常抛出增强
+			使用@After注解定义最终增强
+			使用@Around注解定义环绕增强
+
+十、总结
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		
