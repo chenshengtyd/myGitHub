@@ -1,0 +1,154 @@
+public class HibernateSessionFactory {
+    private static Configuration configuration;//读取配置文件
+    private static ServiceRegistry registry;
+    private static SessionFactory sessionFactory;//会话工厂
+    private static ThreadLocal<?> threadLocal = new ThreadLocal<Session>();
+
+    static {
+        /*获取配置对象*/
+        configuration = new Configuration().configure();
+        registry = new StandardServiceRegistryBuilder().applySettings(configuration.getProperties()).build();
+        sessionFactory = configuration.buildSessionFactory(registry);
+    }
+
+    /*
+    获取当前Session
+     */
+    public static Session getCurrentSession() {
+        Session session = (Session) threadLocal.get();
+        if (null == session) {
+            session = sessionFactory.openSession();
+        }
+        return session;
+    }
+
+    /*
+    关闭Session连接
+     */
+    public static void closeSession() {
+        Session session = (Session) threadLocal.get();
+        if (null != session) {
+            session.close();
+        }
+    }
+
+
+}
+
+一、IntelliJ IDEA配置
+	1.配置Maven和JDK
+		在初始进入页面右下角点击Configure下面，然后点击Settings，接着找到Maven选项，配置两个地方。。
+	2.创建项目
+		JAVA和Web项目
+	3.View下工具的选择
+		勾选Toolbar和Tool Buttons
+		这里勾选了4个选项
+		
+二、了解Hibernate
+	百度百科：http://baike.baidu.com/link?url=esHMDI0bLFYD7Du7ujcjEHc_mICTtiCOagrnFeWHVEpS8HnVE_LigoVjBrCPj8aIv9LgNSpjdXeamoKe4ECR4KB-8KYFo-MxxHb8CMqtQQa
+	官网地址：http://hibernate.org/
+	HibernateORM地址：http://hibernate.org/orm/	(主要用到这个里面的东西，后期还会用到Hibernate Validator)
+	
+	select * form user
+	form User
+	
+	EJB--需要容易--JBOSS...
+	
+	SqlSessionFactoryBuilder -->> SqlSessionFactory -->> SqlSession
+	Configuration -->> SessionFactory -->> Session
+	
+	Unix-->>祖先级别
+	Linux-->>
+		centos
+		ubuntu
+		Redhat
+	
+	SNAPSHOT
+		开发板
+	released
+		发布版
+		
+	Java项目打包
+		**.jar
+	Web项目打包
+		**.war
+		
+	Hibernate ORM
+		Hibernate 关系对象映射
+	Hibernate Validator
+		Hibernate 验证框架 -->> JSR303验证框架
+	
+	
+三、通过IDEA进行创建第一个Hibernate工程
+	3.1.创建一个Web项目，然后配置正常。
+	3.2.给你的web工程添加Hibernate配置，+号添加
+	3.3.添加坐标信息，导入Jar包
+		JUNIT 4.12
+		Hibernate
+		驱动JAR-Oracle的
+			这里需要说明Oracle的驱动Jar包不能正常添加进行，需要进行Jar注册
+			1.首先找到安装Oracle目录的Oracle驱动Jar包：C:\app\Administrator\product\11.2.0\dbhome_1\jdbc\lib
+			2.通过命令进行添加Oracle驱动Jar包到Maven的本地仓库中去：
+				mvn install:install-file -DgroupId=com.chensheng.oracle -DartifactId=OracleDriver6 -Dversion=11.8.8 -Dpackaging=jar -Dfile=ojdbc6.jar
+				解释：
+					DgroupId横坐标
+					DartifactId纵坐标
+					Dversion版本号
+					Dpackaging类型
+					Dfile你的Jar文件全路劲
+			3.通过配置好的横纵坐标和版本号进行添加Oracle驱动
+	3.4.添加Hibernate配置文件，默认名称为：hibernate.cfg.xml
+		xxx.xml
+		xxx.properties
+	
+	3.5.在src main java 下面进行创建几个package
+		entity
+		utils
+		test
+		。。。
+	3.6.接下来再添加的Persistence窗口里面会出现两个文件，右键点击带油桶的配置文件，创建一个数据库源的配置信息
+	3.7.反向生成实体类和映射文件，并且生成 构造方法和重写toString()方法
+	3.8.编写测试方法
+	
+四、数据三种状态之间的转换
+	根据图片进行说明
+	
+五、常用方法对比
+	一、save()和persist()方法
+		使用 save() 方法保存持久化对象时，该方法返回该持久化对象的标识属性值(即对应记录的主键值)；
+		
+		但使用 persist() 方法来保存持久化对象时，该方法没有任何返回值。因为 save() 方法需要立即返回持久化对象的标识属性，所以程序执行 save() 会立即将持久化对象对应的数据插入数据库；
+		而 persist() 则保证当它在一个事物外部被调用时，并不立即转换成 insert 语句， 这个功能是很有用的，尤其当我们封装一个长会话流程的时候，persist() 方法就显得尤为重要了。   
+		
+		主要内容区别： 
+		1，persist把一个瞬态的实例持久化，但是并"不保证"标识符(identifier主键对应的属性)被立刻填入到持久化实例中，标识符的填入可能被推迟到flush的时候。
+		2，save, 把一个瞬态的实例持久化标识符，及时的产生,它要返回标识符，所以它会立即执行Sql insert
+	二、get()和load()方法
+	User
+		uid
+		uname
+		upwd
+		public Address uaddress;
+	
+		1、get()方法
+		（1）session.get()、query.list()总是会进行立即检索，get()方法不支持延迟加载策略；
+		（2）如果没有搜索到相关对象，返回一个null，当想判断实例是否存在时，用get。
+		2、load()方法
+		（1）如果Session缓存中没有相关对象，load并不立即查询数据库，不执行select，仅返回BO的一个代理类实例：这个代理类扩展自BO类，由Hibernate在运行时使用CGLIB工具动态产生；代理类实例仅初始化OID属性，其他属性都是null，第一次访问BO属性（非ID属性）时，Hibernate会执行select+初始化代理类实例
+		（2）若select查不到，则抛ObjectNotFoundException，getId()并不能触发查询。
+		（3）load方法支持延迟加载策略，这种延迟初始化能够节省数据库查询，提高性能。
+	三、update()和saveOrUpdate()
+		1、update()
+			  Session 的 update() 方法使一个游离对象转变为持久化对象, 并且计划执行一条 update 语句，若希望 Session 仅当修改了 News 对象的属性时，才执行 update() 语句,，可以把映射文件中 <class> 元素的 select-before-update 设为 true. 该属性的默认值为 false；当 update() 方法关联一个游离对象时, 如果在 Session 的缓存中已经存在相同 OID 的持久化对象, 会抛出异常；当 update() 方法关联一个游离对象时, 如果在数据库中不存在相应的记录, 也会抛出异常.
+		2、saveOrUpdate()
+			   Session 的 saveOrUpdate() 方法同时包含了 save() 与 update() 方法的功能，判定对象为临时对象的标准，Java 对象的 OID 为 null，映射文件中为 <id> 设置了 unsaved-value  属性, 并且 Java 对象的 OID 取值与这个 unsaved-value 属性值匹配
+	四、clear()和flush()
+		1、clear()
+		无论是Load 还是 get 都会首先查找缓存（一级缓存），如果没有，才会去数据库查找，调用Clear() 方法，可以强制清除Session缓存。
+		2、flush()
+			  可以强制进行从内存到数据库的同步,Flush方法是可以设置的，也就是 fulsh 什么时候执行是可以设置的 在session.beginTransaction 前设置 FlushMode
+		session.setFlushMode(FlushMode.Always|AUTO|COMMIT|NEVER|MANUAL)， 有个好处是可以节省开销，比如默认 session 只做查询时，
+		就可以不让他与数据库同步了。
+		session.evict(obj) ：会把指定的缓冲对象进行清除。 
+		session.clear() ：把缓冲区内的全部对象清除，但不包括操作中的对象。
+			flush方法的主要作用就是清理缓存，强制数据库与Hibernate缓存同步，以保证数据的一致性。它的主要动作就是向数据库发送一系列的sql语句，并执行这些sql语句，但是不会向数据库提交。而commit方法则会首先调用flush方法，然后提交事务。这就是为什么我们仅仅调用flush的时候记录并未插入到数据库中的原因，因为只有提交了事务，对数据库所做的更新才会被保存下来。因为commit方法隐式的调用了flush，所以一般我们都不会显示的调用flush方法。这是hibernate的flush机制。在一些复杂的对象更新和保存的过程中就要考虑数据库操作顺序的改变以及延时flush是否对程序的结果有影响。如果确实存在着影响，那就可以在需要保持这种操作顺序的位置加入flush强制Hibernate将缓存中记录的操作flush入数据库，这样看起 来也许不太美观，但很有效。
