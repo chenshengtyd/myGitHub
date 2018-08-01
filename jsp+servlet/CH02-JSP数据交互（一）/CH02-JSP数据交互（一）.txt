@@ -1,0 +1,110 @@
+一、JSP内置对象
+	1.1.什么是JSP内置对象？
+		JSP内置对象是 Web 容器创建的一组对象
+		比如：没有进行声明和创建，但却可以使用out.println(i);
+	1.2.常用的JSP(9大)内置对象：详解博客http://blog.csdn.net/yenange/article/details/5949518
+		request
+		response
+		session
+		out
+		page
+		application
+		exception
+		pageContext
+		config
+
+二、JSP内置对象request
+	2.1.请求的原理
+	2.2.request对象常用方法
+		String getParameter(String name)	
+			根据表单组件名称获取提交数据
+		String[ ] getParameterValues(String name)
+			获取表单组件对应多个值时的请求数据 
+		void setCharacterEncoding(String charset)
+			指定每个请求的编码
+		RequestDispatcher getRequestDispatcher(String path)
+			返回一个RequestDispatcher对象，该对象的forward( )方法用于转发请求
+	2.3.获取数据时解决中文乱码问题
+		方法一：
+			<%   
+				// 以GET方式提交数据时
+				// 读取用户名和密码
+				String name = request.getParameter("name");
+				// 对请求数据进行字符编码
+				name = new String(name.getBytes("ISO-8859-1"), "UTF-8");
+			%>
+		方法二：
+			在Tomcat目录结构\conf\server.xml中设置字符集
+			<Connector  port="8080"  protocol="HTTP/1.1"
+				connectionTimeout="20000"
+				redirectPort="8443"  URIEncoding="UTF-8"
+			/>
+
+三、JSP内置对象response
+	3.1.response对象用于响应客户请求并向客户端输出信息 
+	3.2.页面重定向
+		void sendRedirect(String location)
+		客户端将重新发送请求到指定的URL
+	3.3.实现登录验证，并在验证成功后跳转至欢迎页面
+	3.4.页面实现跳转了，请求的信息是否也一起转移呢？
+		如何才能实现页面跳转后，请求信息不丢失呢？
+			使用转发取代重定向实现页面跳转
+	3.5.请求的转发
+		转发的作用
+			在服务器端，将请求发送给服务器上的其他资源，以共同完成一次请求的处理
+		转发的实现
+			RequestDispatcher对象的forward()方法
+		示例：
+			<%
+				RequestDispatcher rd = request.getRequestDispatcher("welcome.jsp");
+				rd.forward(request, response);
+			%>
+	3.6.转发和重定向的总结
+		转发：
+			转发是在服务器端发挥作用，将同一请求在服务器资源之间进行传递
+			客户端浏览器的地址栏不会显示转向后的地址(地址栏的地址会不会发生改变)
+		重定向：
+			重定向是在客户端发挥作用，通过发送一个新的请求实现页面转向
+			在地址栏中可以显示转向后的地址(地址栏的地址会发生改变)
+
+四、会话(session)-->>JSP内置对象session
+	4.1.解释：一个会话就是在一段时间内，一个客户端与Web服务器的一连串相关的交互过程
+	4.2.session对象常用方法：
+		String getId()	
+			获取sessionid
+		void setMaxInactiveInterval(int interval)	
+			设定session的非活动时间
+		int getMaxInactiveInterval()	
+			获取session的有效非活动时间(以秒为单位)
+		void invalidate()	
+			设置session对象失效
+		void setAttribute(String key, Object value)	
+			以key/value的形式保存对象值
+		Object getAttribute(String key)	
+			通过key获取对象值 
+		void removeAttribute(String key)	
+			从session中删除指定名称(key)所对应的对象
+	4.3.session与窗口的关系
+		4.3.1.每个session对象都与一个浏览器窗口对应 ，重新开启一个浏览器窗口，可以重新创建一个session对象（不同版本浏览器可能有所差别）
+		4.3.2.通过超链接打开的新窗口，新窗口的session与其父窗口的session相同
+
+五、include指令
+	除了首页面，其它页面中同样需要加入登录验证，有没有办法避免冗余代码的出现？
+	可以将一些共性的内容写入一个单独的文件中，然后通过include指令引用该文件
+	语法：
+		<%@  include file="xxx.jsp" %>
+	示例：
+		//需要引用的文件
+		<%
+			String login = (String) session.getAttribute("login");
+			if (login == null) {
+			　　response.sendRedirect("index.jsp");
+				return;
+			} 
+		%>
+		//引用页面需要的代码
+		<jsp:include page="show.jsp"></jsp:include> 为准
+		<%@  include file="loginControl.jsp" %>
+
+六、总结
+	

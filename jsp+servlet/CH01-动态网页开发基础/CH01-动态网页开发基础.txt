@@ -1,0 +1,97 @@
+一、什么是动态页面？
+	为什么要使用动态页面？
+	之前流行C/S，为什么现在流行B/S brower
+	B/S的原理是什么
+
+二、Tomcat(汤姆猫)
+	2.1.Tomcat服务器(进官网)
+		Apache Jakarta的开源项目
+		JSP/Servlet容器
+	2.2.Tomcat的目录详解：
+		/bin		存放各种平台下用于启动和停止Tomcat的脚本文件
+		/conf		存放Tomcat服务器的各种配置文件
+		/lib		存放Tomcat服务器所需的各种JAR文件
+		/logs		存放Tomcat的日志文件
+		/temp		Tomcat运行时用于存放临时文件
+		/webapps	当发布Web应用时，默认情况下会将Web应用的文件存放于此目录中
+		/work		Tomcat把由JSP生成的Servlet放于此目录下
+		
+		类似于tomcat的服务器，还有jboss，weblogic，websphere，后两个都是收费的，推荐你使用俄罗斯大神开发的nginx服务器
+		JBOSS-->>EJB --->>Spring代替
+		weblogic -->>功能非常强大 200+M 10M --->>尝试的玩一玩
+		websphere -->>IBM
+	2.3.安装和配置和启动
+		安装：解压缩版本Tomcat
+		配置：添加系统变量，名称为CATALINA_HOME。参考：http://jingyan.baidu.com/article/8065f87fcc0f182330249841.html
+			注意：在配置tomcat之前应该已经配置好了JDK的运行环境
+			修改端口号：通过配置文件server.xml修改Tomcat端口号
+		启动：启动和停止Tomcat服务器
+			：Tomcat服务启动检测
+				在IE地址栏中输入http://localhost:端口号:http://localhost:8080
+				页面进入到Tomcat启动成功界面
+		配置用户名和密码
+
+三、Web项目
+	3.1.Web项目的目录结构
+		/					Web应用的根目录，该目录下所有文件在客户端都可以访问(JSP、HTML等)
+		/WEB-INF			存放应用使用的各种资源，该目录及其子目录对客户端都是不可以访问
+		/WEB-INF/classes	存放Web项目的所有的class文件
+		/WEB-INF/lib		存放Web应用使用的JAR文件
+	3.2.创建、部署和发布项目
+		创建
+		部署到tomcat
+		发布项目--启动
+	3.3.配置访问页面
+		通过配置文件web.xml修改访问起始页，修改<welcome-file-list>的子标签<welcome-file>标签
+		
+四、JSP(Java Server Pages)
+	4.1.什么是JSP？
+	4.2.在HTML中嵌入Java脚本代码
+		小脚本
+		<% 
+			SimpleDateFormat formater = new SimpleDateFormat("yyyy年 MM月dd日");
+    	    String strCurrentTime = formater.format(new Date()); 
+		%>
+		表达式
+        <%=strCurrentTime %>
+		
+		玩个题：编写JSP页面，计算1—100之间的所有素数之和
+		素数：在一个大于1的自然数中，除了1和此整数自身外，不能被其他自然数整除的数
+	4.3.JSP中的声明
+		语法：<%! Java代码%>
+		注意：方法声明后可在页面中多处调用
+		示例：
+			<%！
+				String formatDate(Date d){
+					SimpleDateFormat formater = new SimpleDateFormat("yyyy年MM月dd日");
+					return formater.format(d);
+				}
+			%>你好，今天是
+			<%=formatDate(new Date()) %>
+	4.4.JSP中的指令
+		通过设置内部的多个属性定义整个页面的属性
+		语法：<%@ page 属性1="属性值" 属性2="属性值1,属性值2"… 属性n="属性值n"%>
+		常用的属性：
+			language	指定JSP页面使用的脚本语言	java
+			import		通过该属性来引用脚本语言中使用到的类文件	无
+			contentType	用来指定JSP页面所采用的编码方式	text/html, ISO-8859-1
+
+	4.5.JSP中的注释
+		HTML的注释：		<!-- html注释-->
+		JSP注释：			<%-- JSP注释--%>
+		在JSP脚本中注释：	<% //单行注释 %> <%  /*多行注释 */ %>
+
+五、IDE中进行开发
+	5.1.创建项目
+	5.2.调试项目
+	5.3.常见错误：
+		未启动Tomcat:
+			提示无法显示该网页
+		未部署Web应用：
+			HTTP Status 404
+		URL输入错误：
+			HTTP Status 404
+		目录不能被引用
+			HTTP Status 404-
+
+六、总结

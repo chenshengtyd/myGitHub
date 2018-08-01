@@ -1,0 +1,168 @@
+JDBC
+	java Database connection 技术
+HTML 超文本标记语言
+CSS 级联样式表
+JS Java脚本
+DOM 文档对象模型
+BOM 浏览器对象模型
+HTTP 超文本传输协议
+
+9大内置对象
+	session
+	request
+	response
+	application
+	config
+	pageContext
+	page
+	exception
+	out
+
+1.转发--服务器端--地址不会发生改变
+	request.getRequestDispatcher("地址").forward(request,response);
+2.重定向--客户端--地址栏地址会发生改变
+	response.sendRedirect("地址");
+	
+范围：小 到 大
+	page(pageContext) -- request,response -- session -- application
+
+	Session			和		Cookie区别：
+	1.服务器 				客户端
+	2.Object				String
+	3.周期会话结束			有效期
+	4.存储信息比较安全		不太安全
+	
+1.创建Cookie对象 Cookie ck = new Cookie("key", "value");
+2.存储Cookie对象 response.addCookie(ck);
+3.获取使用Cookie对象 Cookie[] cks = request.getCookies();
+
+一、JNDI
+	1.1.什么是JNDI？
+		Java Naming and Directory Interface，Java命名和目录接口
+		通过名称将资源与服务进行关联
+	1.2.JNDI的作用与优点
+		在应用与Java对象或资源之间建立松耦合的逻辑关联，简化应用对于资源的配置及维护工作
+			松耦合==低耦合
+			紧耦合==高耦合
+		可以在更大范围、不同应用之间共享资源
+			log4j
+			junit
+	1.3.JNDI的简单应用
+		1.配置Context.xml文件--tomcat目录下面的conf文件夹下面
+			示例：
+				<Context>
+				   <Environment name="tjndi" value="hello JNDI" type="java.lang.String" />
+				</Context>
+		2.编写JSP页面读取配置信息
+			/* Context上下文 */
+			Context context = new InitialContext();
+			String testtjndi = (String)context.lookup("java:comp/env/tjndi");
+			out.print(testtjndi);
+			String testDriver = (String)context.lookup("java:comp/env/Driver");
+			out.print(testDriver);
+	1.4.自由扩展内容
+		JNDI学习总结(一)JNDI数据源的配置：http://blog.csdn.net/samjustin1/article/details/52265796
+		
+		Oracle数据库：Java	JSP J2EE
+		Mysql数据库：PHP
+		SQLServer数据库：C# .NET  ASP.net asp
+		Access
+		MongDB  Nosql数据库
+		Redis 内存中运行的，适合缓存的数据库
+		
+
+二、连接池
+	2.1.为什么使用连接池？
+		传统数据库连接方式的不足
+			需要经常与数据库建立连接，在访问结束后必须关闭连接释放资源
+			当并发访问数量较大时，执行速度受到极大影响 SEO
+			系统的安全性和稳定性相对较差
+	2.2.连接池的原理:http://blog.csdn.net/shuaihj/article/details/14223015
+	2.3.DataSource与连接池
+		javax.sql.DataSource接口的实现类
+			负责管理与数据库的连接
+			以连接池的形式对数据库连接进行管理
+	2.4.如何获得DataSource的实例？
+		Tomcat支持将DataSource实现发布为JNDI资源
+		Web应用通过JNDI获得DataSource引用
+	2.5.具体代码的编写
+		2.5.1.配置context.xml文件
+			<Context>
+				<Resource auth="Container" driverClassName="com.mysql.jdbc.Driver"
+					maxActive="100" maxIdle="30" maxWait="10000" name="jdbc/mysql"
+					password="root" type="javax.sql.DataSource"
+					url="jdbc:mysql://127.0.0.1:3306/test?useUnicode=true&amp;characterEncoding=utf-8"
+					username="root" />
+			</Context>
+			属性解释：
+				name		指定Resource的JNDI名称
+				auth		指定管理Resource的Manager
+				type		指定Resource所属的Java类
+				maxActive	指定连接池中处于活动状态的数据库连接的最大数目
+				maxIdle		指定连接池中处于空闲状态的数据库连接的最大数目
+				maxWait		指定连接池中的连接处于空闲的最长时间
+
+		2.5.2.配置web.xml文件
+			<resource-ref>
+				<!-- 指定JNDI的名字，与<Resource>元素中的name一致 -->
+				<res-ref-name>jdbc/mysql</res-ref-name>
+				<!-- 指定引用资源的类名，与<Resource>元素中的type一致 -->
+				<res-type>javax.sql.DataSource</res-type>
+				<!-- 指定管理所引用资源的Manager与<Resource>元素中的auth一致 -->
+				<res-auth>Container</res-auth>
+			</resource-ref>
+		2.5.3.添加数据库驱动文件
+		2.5.4.进行代码编写，查找并获取数据源
+			public Connection getConnection () {
+				Connection conn = null;
+				try { //获取与逻辑名相关联的数据源对象
+					Context ctx = new InitialContext();
+					DataSource ds=(DataSource)ctx.lookup("java:comp/env/jdbc/news");
+					conn = ds.getConnection();	             
+				 } catch (SQLException exception) {
+					exception.printStackTrace();
+				 } catch (NamingException namingException)      
+					namingException.printStackTrace();
+				 }
+				 return conn;
+			 }  
+
+MVC
+	M Model dao 数据访问层
+	V View  xx  表示层
+	C Controller servlet/action/controller 控制逻辑层/业务逻辑层/	服务层
+			 
+三、三层模式
+	3.1.哪三层？	
+		MVC
+		表示层：与用户交互、展示数据
+			V	SpringMVC Struts2		jsp
+		业务逻辑层：控制业务流程及事务
+			C	Spring --Servlet		servlet/action/controller
+		服务层
+			Service						service
+		数据访问层：实现数据库操作
+			M -- MyBatis Hibernate  	dao
+	
+	3.2.分层原则：
+		3.2.1.上层依赖其下层，依赖关系不跨层 
+			表示层不能直接访问数据访问层
+			上层调用下层的结果，取决于下层的实现
+		3.2.2.下一层不能调用上一层 
+		3.2.3.下一层不依赖上一层
+			上层的改变不会影响下一层
+			下层的改变会影响上一层得到的结果
+		3.2.4.在上一层中不能出现下一层的概念 
+			分工明确，各司其职
+	
+	3.3.优点
+		职责清晰，分工明确
+		利于维护扩展
+		利于代码重用
+
+四、总结
+
+作业：
+	1.通过JNDI获取配置信息
+	2.配置数据源的JNDI(连接池)，进行查询数据
+	3.回顾4+1

@@ -1,0 +1,79 @@
+一、EL表达式
+	1.1.为什么要使用EL表达式
+		1.1.1.在JSP中使用Java脚本的局限
+			在JSP页面中嵌入大量的Java代码
+			访问结构比较复杂的数据时代码烦琐，且经常需要强制类型转换
+			代码示例：
+				<%	
+					Employee employee = (Employee) request.getAttribute("employee");
+					Computer comp = employee.getComputer();//员工里面有一个类类型的属性
+					String manufacturer = comp.getManufacturer();//制造商
+				%>
+		1.1.2.EL表达式使JSP的开发变得更加简单
+			${requestScope.employee.computer.manufacturer}
+	1.2.EL表达式介绍
+		什么是EL
+			Expression Language（表达式语言）
+		EL的功能
+			替代JSP页面中数据访问时的复杂编码
+		EL的特点
+			自动转换类型 
+				EL得到某个数据时可以自动转换类型 
+			使用简单(前提：你要懂他的语法)
+	1.3.语法
+		${ EL expression }
+		PPT讲解：
+			通过变量名取值
+			获取对象的属性值
+			获取集合元素
+			执行表达式
+	1.4.EL隐式对象和EL隐式对象介绍(最好是PPT讲解，直观)
+		隐式对象
+			作用域访问对象
+				pageScope
+				requestScope
+				sessionScope
+				applicationScope
+			参数访问对象
+				param
+				paramValues
+			JSP隐式对象
+				pageContext
+
+二、JSTL
+	2.1.为什么要使用JSTL？
+		使用EL表达式可以简化JSP页面编码，但是如果需要进行逻辑判断和循环控制怎么办？
+		EL表达式封装了数据访问的功能，而JSTL标签库则封装了逻辑控制、循环控制以及数据格式化等功能，
+		二者结合使用才能完整实现动态页面的开发需求
+			c标签库
+	2.2.什么是JSTL？
+		JSP标准标签库（JSP Standard Tag Library）
+		优点：
+			提供一组标准标签
+			可用于编写各种动态 功能
+		JSTL通常会与EL表达式合作实现JSP页面的编码
+	2.3.JSTL的环境搭建
+		使用JSTL的步骤：
+			1.引入JSTL的jar文件和标签库描述符文件
+			2.在JSP页面添加taglib指令
+				<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+			3.使用JSTL标签
+	2.4.JSTL标准标签库介绍(核心标签)
+		常用标签(PPT介绍)
+			通用标签
+				set
+				out
+					escapeXml 设置是否计算 true 不计算 false 计算
+				remove
+			条件标签
+				if
+				choose
+			迭代标签
+				forEach
+
+三、总结
+
+作业：
+	1.
+	2.
+	3.

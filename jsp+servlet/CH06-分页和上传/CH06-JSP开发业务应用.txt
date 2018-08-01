@@ -1,0 +1,81 @@
+一、分页
+	1.1.分页显示的步骤
+		确定每页显示的数据数量
+		确定分页显示所需的总页数
+		编写SQL查询语句，实现数据查询
+		在JSP页面中进行分页显示设置
+	1.2.封装Page类
+		public class Page {
+			// 总页数
+			private int totalPageCount = 0;
+			// 页面大小，即每页显示记录数
+			private int pageSize = 2;
+			// 记录总数
+			private int totalCount;
+			// 当前页码
+			private int currPageNo = 1;
+			// 每页集合
+			private List<UserInfo> userInfoList;
+			
+			public int getCurrPageNo() {
+				if (totalPageCount == 0)
+					return 0;
+				return currPageNo;
+			}
+
+			public void setCurrPageNo(int currPageNo) {
+				if (currPageNo > 0)
+					this.currPageNo = currPageNo;
+			}
+			
+			public void setPageSize(int pageSize) {
+				if (pageSize > 0)
+					this.pageSize = pageSize;
+			}
+			....
+			public void setTotalCount(int totalCount) {
+				if (totalCount > 0) {
+					this.totalCount = totalCount;
+					// 计算总页数
+					totalPageCount = this.totalCount % pageSize == 0 ? (this.totalCount / pageSize)
+							: (this.totalCount / pageSize + 1);
+				}
+			}
+		}
+	1.3.获取总记录数
+		select count(1) from 表名 
+		效率高于
+		select count(*) from 表名
+	1.4.计算总页数
+		totalPageCount = (this.totalCount % pageSize == 0) ? 
+			(this.totalCount / pageSize) : ((this.totalCount / pageSize) + 1);
+	1.5.使用LIMIT子句
+		select * FROM USERINFO order by uid asc limit 0, 2;
+二、上传
+	2.1.Commons-FileUpload介绍
+		Commons-FileUpload组件：
+			Commons是Apache开放源代码组织的一个Java子项目，其中的FileUpload是用来处理HTTP文件上传的子项目
+		Commons-FileUpload组件特点：
+			使用简单：可以方便地嵌入到JSP文件中，编写少量代码即可完成文件的上传功能
+			能够全程控制上传内容
+			能够对上传文件的大小、类型进行控制
+			
+		Java操作Excel表格---POI
+		MQ
+	2.2.需要的Jar包
+		commons-fileupload-1.2.2.jar
+		commons-io-2.4.jar
+	2.3.Commons-FileUpload组件应用
+		环境准备
+			在项目中引入commons-fileupload-1.2.2.jar和commons-io-2.4.jar文件
+		设置表单的enctype属性
+			<form enctype="multipart/form-data" method="post">
+		在表单中使用File控件选择文件
+			<input type="file" name="nfile" /> 文件域
+		注意：上传文件时form标签的method属性必须设置为“post”，不能设置为“get”
+	2.4.常用方法介绍(通过PPT)
+	
+	
+作业：
+	1.分页的作业，通过JSP显示数据（首页 上一页 下一页 尾页） 小脚本
+	2.练习上传。。

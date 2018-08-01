@@ -1,0 +1,92 @@
+一、Servlet
+	1.1.什么是Servlet？
+		Servlet是在服务器端运行的Java程序，可以接收客户端请求并做出响应
+		Servlet可以动态生成HTML内容对客户端进行响应
+	1.2.Servlet与JSP的关系？
+		Servlet与JSP都可以动态生成HTML内容
+		我们说JSP被翻译成.JAVA，新建一个JSP,运行后，再观看此.java文件上，如Test.jsp在运行时首先解析成一个Java类Test_jsp.java，而这个Test_jsp.java继承于org.apache.jasper.runtime.HttpJspBase类，而HttpJspBase又是继承自HttpServlet的类，由此可以得出一个结论，就是JSP在运行时会被Web容器翻译为一个Servlet
+	1.3.Servlet接口
+		解释：定义了所有Servlet需要实现的方法
+		PPT查看方法介绍
+	1.4.GenericServlet抽象类
+		解释：提供了Servlet与ServletConfig接口方法的默认实现（service()方法除外）
+		PPT查看方法介绍
+	1.5.HttpServlet抽象类
+		解释：继承自GenericServlet，处理HTTP协议的请求和响应
+		PPT查看方法介绍
+	1.6.ServletConfig接口
+		解释：在Servlet初始化过程中获取配置信息，一个Servlet只有一个ServletConfig对象
+		PPT查看方法介绍
+	1.7.ServletContext接口
+		解释：获取Web应用上下文，与Servlet容器进行通信
+		PPT查看方法介绍
+
+二、请求、响应相关接口
+	2.1.ServletRequest接口
+		解释：获取客户端请求的数据
+		PPT查看方法介绍
+	2.2.HttpServletRequest接口
+		解释：除了继承ServletRequest接口中的方法，还增加了一些用于读取HTTP请求信息的方法
+		PPT查看方法介绍
+	2.3.ServletResponse接口
+		解释：设置响应参数和向客户端发送响应数据
+		PPT查看方法介绍
+	2.4.HttpServletResponse接口
+		解释：除了继承ServletResponse接口中的方法，还增加了适用于HTTP响应的新方法
+		PPT查看方法介绍
+		
+三、Servlet的应用
+	3.1.使用步骤：
+		1.创建Servlet
+			继承HttpServlet
+			重写doPost()或doGet()方法
+		2.部署Servlet
+			编译Servlet到/WEB-INF/classes目录
+			编辑部署描述文件web.xml
+				<servlet>
+				<servlet-mapping>
+					<url-pattern>
+		3.启动Tomcat，访问Servlet
+	3.2.Servlet的生命周期
+		生命周期的各个阶段(4个阶段)：
+			实例化	Servlet 容器创建 Servlet 的实例
+			初始化	该容器调用 init ( ServletConfig ) 方法
+			服务	如果请求 Servlet，则容器调用 service() 方法
+			销毁	销毁实例之前调用 destroy() 方法
+		生命周期：通过PPT来查看
+	3.3.获取Servlet初始化参数
+		3.3.1.Servlet初始化参数配置(web.xml)
+			<servlet>
+				<servlet-name>HelloServlet</servlet-name>
+				<servlet-class>demo.servlet.HelloServlet</servlet-class>
+				<!-- 这里配置 -->
+				<init-param>
+					<param-name>initParam</param-name>
+					<param-value>Hello Servlet</param-value>
+				</init-param>
+			</servlet>
+		3.3.2.获取初始化参数
+			String initParam = getInitParameter( "initParam" );
+	3.4.获取Servlet上下文参数
+		3.4.1.配置Servlet上下文（web.xml中进行配置）
+			<context-param>
+				<param-name>contextParam</param-name>
+				<param-value>Hello Servlet</param-value>
+			</context-param>
+		3.4.2.读取Servlet上下文
+			String contextParam = this.getServletContext().getInitParameter( "contextParam" );
+	
+四、总结	
+	
+作业：	
+	1.模拟登陆-->>jdbc去连接数据库
+	2.获取初始化参数
+	3.获取Servlet上下文参数
+	
+	
+	
+	
+	
+	
+	
+	

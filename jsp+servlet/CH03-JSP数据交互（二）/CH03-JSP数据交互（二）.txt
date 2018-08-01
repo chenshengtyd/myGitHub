@@ -1,0 +1,75 @@
+一、application内置对象应用的介绍
+	1.1.通过刷新页面例子，来获取页面刷新的次数。
+	1.2.application对象的常用方法
+		void setAttribute(String key, Object value)
+			以key/value的形式保存对象值
+		Object getAttribute(String key)
+			通过key获取对象值 
+		String getRealPath(String path)
+			返回相对路径的真实路径
+
+	热插件：JRebel
+			
+二、常用内置对象
+	out			用于向客户端输出数据
+	request		主要用于处理客户端请求的数据信息
+	response	用于响应客户端请求并向客户端输出信息
+	session		用于记录会话状态的相关信息
+	application	类似于系统的全局变量，用于实现Web应用中的资源共享
+
+三、对象的作用域
+	page作用域			在一个页面范围内有效，通过pageContext对象访问
+	request作用域 		在一个服务器请求范围内有效
+	session作用域		在一次会话范围内容有效
+	application作用域	在一个应用服务器范围内有效
+
+四、cookie
+	4.1.通过PPT进行讲解
+	4.2.运用cookie的步骤：
+		1.创建cookie对象
+			Cookie newCookie = new Cookie(String key, String value);
+		2.写入cookie
+			response.addCookie(newCookie);
+		3.读取cookie
+			Cookie[] cookies = request.getCookies();
+	4.3.cookie对象的常用方法
+		void setMaxAge(int expiry)	设置cookie的有效期，以秒为单位
+		void setValue(String value)	在cookie创建后，对cookie进行赋值 
+		String getName()			获取cookie的名称
+		String getValue()			获取cookie的值
+		int getMaxAge()				获取cookie的有效时间，以秒为单位
+	4.4.cookie与session的对比(最好是通过PPT)
+		session
+			1.在服务器端保存用户信息
+			2.session中保存的是Object类型
+			3.随会话的结束而将其存储的数据销毁
+			4.保存重要的信息
+		cookie
+			1.在客户端保存用户信息
+			2.cookie保存的是 String类型
+			3.cookie可以长期保存在客户端
+			4.保存不重要的用户信息
+			
+五、JDBC相关知识回顾
+	5.1.使用JDBC访问数据库的步骤
+		1.加载JDBC驱动					Class.forName()
+		2.与数据库建立连接				DriverManager.getConnection()
+		3.发送SQL语句，并得到返回结果	Statement 、 ResultSet 
+		4.处理返回结果					处理返回结果
+		5.释放资源						.close()
+
+六、回顾JavaBean
+
+七、总结
+
+
+
+
+
+Redis -->> 数据库 --->> 缓存技术
+      -->> 运行在内存当中的数据库
+	  -->> 既可以再内存中保存数据,也可以在本地磁盘保存数据
+作业:
+	1.PPT上的学员那操作
+	2.热插件：JRebel
+	3.IDEA安装 注册码 监听服务地址： http://idea.iteblog.com/key.php

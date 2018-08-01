@@ -1,0 +1,147 @@
+一、$.get()方法 3
+	1.语法：$.get( url [, data] [, success] [, dataType] );
+	2.参数说明：
+		url			String	必选，发送请求的地址
+		data		PlainObject 或 String	发送到服务器的数据
+		success		Function( PlainObject  result,String  textStatus, jqXHR  jqxhr )	请求成功后调用的函数参数result：可选，由服务器返回的数据
+		dataType	String	预期服务器返回的数据类型，包括：XML、HTML、Script、JSON、JSONP、text
+	3.示例：
+		$.get( url, data, function( result ) {
+			// 省略将服务器返回的数据显示到页面的代码
+		} );
+		等价于
+		$.ajax( {
+			"url"         : url,
+			"data"        : data,
+			"type"        : "get",
+			"success" : function( result ) {
+				// 省略代码
+			}
+		} );
+		
+二、$.post()方法 3
+	1.语法：$.post( url [, data] [, success] [, dataType] );
+	2.参数说明：
+		url	String	必选，发送请求的地址
+		data	PlainObject 或 String	发送到服务器的数据
+		success	Function( PlainObject  result, String  textStatus, jqXHR  jqxhr )	请求成功后调用的函数参数result：可选，由服务器返回的数据
+		dataType	String	预期服务器返回的数据类型，包括：XML、HTML、Script、JSON、JSONP、text
+	3.示例：
+		$.post( url, data, function( result ) {
+			// 省略将服务器返回的数据显示到页面的代码
+		} );
+		等价于
+		$.ajax( {
+			"url"          : url,
+			"data"        : data,
+			"type"        : "post",
+			"success" : function( result ) {
+				// 省略代码
+			}
+		} );
+
+三、$.getJSON()方法 2
+	1.语法：$.getJSON( url [, data] [, success] );
+	2.参数说明：
+		url	String	必选，发送请求的地址
+		data	PlainObject 或 String	发送到服务器的数据
+		success	Function( PlainObject  result, String  textStatus, jqXHR  jqxhr )	请求成功后调用的函数参数result：可选，由服务器返回的数据
+	3.示例：
+		$.getJSON( url, data, function( result ) {
+			// 省略将服务器返回的数据显示到页面的代码
+		} );
+		等价于
+		$.ajax( {
+			"url"          : url,
+			"data"         : data,
+			"type"         : "get",
+			"dataType" : "json", //json xml html jsonp text
+			"success"   : function( result ) {
+				// 省略代码
+				for(var i; i<result.length;i++){
+					alert(result[i]);
+				}
+			}
+		} );
+
+四、$.load()方法 2 
+	1.语法：$( selector ).load( url [, data] [, complete] );// 对象、标签
+	2.参数说明：
+		url			String					必选，发送请求的地址
+		data		PlainObject 或 String	发送到服务器的数据
+		complete	Function(String  responseText, String  textStatus, jqXHR  jqxhr )	对每个匹配元素设置完内容后都会触发的函数参数responseText：可选，服务器返回的数据
+	3.示例：
+		$( "#opt_area>ul" ).load( url, data );
+		等价于
+		$.get( url, data, function( responseText ) {
+			$( "#opt_area>ul" ).html( responseText );
+		} );
+		默认使用GET方式请求，除非data参数是一个对象，则使用POST方式
+	4.注意：
+		.load()不是全局函数，而是针对与选择器匹配的元素执行
+		包含匿名回调函数，自动将返回值设置为匹配元素的HTML内容
+
+五、$.param()方法 1-2
+	1.说明：
+		将由.serializeArray()生成的对象数组序列化成请求字符串的形式
+		jQuery还提供了.serialize()方法。
+			.serialize()内部使用$.param()对.serializeArray()做了一个简单包装。不需要中间环节时，可以更简便地完成表单数据的序列化
+	2.示例：(来自菜鸟网)
+		$(document).ready(function(){
+			personObj=new Object();
+			personObj.firstname="John";
+			personObj.lastname="Doe";
+			personObj.age=50;
+			personObj.eyecolor="blue"; 
+			$("button").click(function(){
+				$("div").text($.param(personObj));
+			});
+		});
+
+六、FastJSON 3
+	1.介绍：
+		随着JSON的广泛使用，在服务器端生成JSON字符串成了一件麻烦的工作，效率低且易出错
+		FastJSON
+			一个性能很好的、Java实现的JSON解析器和生成器
+			将Java对象序列化成JSON字符串
+			将JSON字符串反序列化得到Java对象
+		https://github.com/alibaba/fastjson/releases
+		中文API：https://www.w3cschool.cn/fastjson/fastjson-api.html
+	2.FastJSON API
+		入口类：com.alibaba.fastjson.JSON
+		public static String toJSONString (Object object )
+			将Java对象序列化成JSON字符串
+		public static String toJSONString (Object object, boolean prettyFormat )	
+			prettyFormat为true时生成带格式的JSON字符串
+		public static String toJSONString (Object object, SerializerFeature… features )	
+			可以通过参数features指定更多序列化规则
+		public static String toJSONStringWithDateFormat (Object object, String dateFormat, SerializerFeature… features )	
+			可以通过参数dateFormat指定日期类型的输出格式
+	3.示例：http://blog.csdn.net/glarystar/article/details/6654494
+		方法：
+			1.toJSONString()
+			2.parseObject()
+	4.扩展内容JACKSON：JSONP
+		在JAVA中不止一种能JSON化的技术，比如还有JACKSON
+		这里讨论两者的区别，主要在效率上进行测试：参考博客：http://www.oschina.net/code/snippet_1156226_26432
+
+七、jQuery让渡$操作符 2-1
+	1.为什么要让？
+		jQuery不是唯一使用 $ 的脚本库，项目中有其他同样使用 $ 的脚本库时就会引起冲突
+	2.如何让？
+		jQuery定义了jQuery.noConflict()方法，放弃对$的使用权，以免与其他脚本库冲突
+	3.示例：
+		jQuery.noConflict(); // 让渡$使用权，后续jQuery代码使用jQuery代替$
+		jQuery( document ).ready( … );
+		或者重新指定一个替代符号：
+		var  $j = jQuery.noConflict(); // 让渡$使用权，并指定用 $j 代替$
+		$j( document ).ready( … );
+
+八、总结
+
+作业：
+	1.
+	2.
+	3.
+	4.
+	

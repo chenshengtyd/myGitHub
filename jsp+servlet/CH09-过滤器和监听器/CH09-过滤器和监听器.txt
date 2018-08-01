@@ -1,0 +1,127 @@
+
+
+一、过滤器 3/2
+	1.1.什么是过滤器
+		过滤器用于拦截传入的请求和传出的响应
+		监视、修改或以某种方式处理正在客户端和服务器之间交换的数据流
+		message = **是**
+		showMessage = *****
+		SQL注入
+		select * form user where username=xx or 1=1 and password = "xx"
+		select * from user where username = "xxx" or 1=1 and pasword="xx"
+	1.2.过滤器的工作过程
+		通过PPT
+	1.3.过滤器的常见用途
+		利用过滤器特殊的执行时机，可以实现 Web 应用程序中的预处理和后期处理逻辑
+			日志记录
+			改善性能
+			安全与会话管理
+			敏感字过滤
+			。。。
+	1.4.Filter接口
+		javax.servlet.Filter接口定义了过滤器需要实现的方法
+		PPT查看方法介绍
+	1.5.FilterConfig接口
+		在过滤器初始化过程中获取配置信息
+		PPT查看方法介绍
+	1.6.过滤器的应用
+		1.创建过滤器
+			实现Filter接口
+			实现doFilter()方法
+				正确：调用下一个过滤器或Web资源
+				错误：导航到其他URL
+		2.部署过滤器
+			编译Filter到/WEB-INF/classes目录
+			编辑部署描述文件web.xml
+				<filter>
+					<filter-name>CharacterEncodingFilter</filter-name>
+					<filter-class>javaeedemo.filter.CharacterEncodingFilter</filter-class>
+				</filter>
+				<filter-mapping>
+					<filter-name>CharacterEncodingFilter</filter-name>
+					<url-pattern>/*</url-pattern>
+				</filter-mapping>
+		3.启动Tomcat，访问Web资源，观察过滤器的执行
+	1.7.过滤器的生命周期(类似Servlet的)
+		1.实例化
+		2.初始化
+		3.执行过滤
+		4.销毁
+	1.8.读取初始化参数
+		1.配置初始化参数
+		     <filter>
+				<filter-name>CharacterEncodingFilter</filter-name>
+				<filter-class>
+						javaeedemo.filter.CharacterEncodingFilter
+				</filter-class>
+				<!-- 需要配置的参数 -->
+				<init-param>
+					<param-name>charset</param-name>
+					<param-value>UTF-8</param-value>
+				</init-param>
+			</filter>
+		2.获取初始化参数
+			String initParam = request.getInitParameter("charset");
+	1.9.小结
+		1.过滤器是封装了一些功能的Web组件，可用于对来自客户端的请求执行预处理和后期处理
+		2.过滤器的出现明晰和强化了各Web组件之间的分工
+		3.过滤器封装公共任务，对Servlet或JSP提供的核心处理能力进行补充
+		4.使用过滤器封装公共任务具有如下优点
+			模块化
+			声明式
+			可重用
+			透明性
+	1.10.过滤器链
+		当请求的URL与多个过滤器的映射范围相吻合时，这些过滤器会依次对请求进行过滤，形成过滤器链
+		过滤器链的运行建立在嵌套调用的基础上
+		过滤器链的执行顺序：过滤器链式排列的顺序由web.xml描述信息中<filter-mapping>元素的顺序决定
+
+二、监听器 1
+	2.1.监听器是Web应用程序事件模型的一部分
+		Web应用中的某些状态发生改变时会产生相应的事件
+			ServletContext、HttpSession、ServletRequest三个域对象引发的事件
+			域对象中的属性引发的事件
+		监听器可以接收这些事件，以便在事件发生时做出相关处理
+	2.2.监听器接口
+		PPT查看方法介绍
+	2.3.监听器分类(根据三个域对象上的具体操作，将监听器划分为三类)
+		监听三个域对象的创建和销毁事件的监听器
+		监听域对象中属性的增加、删除、替换事件的监听器
+		监听绑定到HttpSession域中的某个对象的状态的监听器，又称为感知型监听器
+	2.4.监听域对象创建与销毁的监听器
+		javax.servlet.ServletContextListener
+			监听ServletContext对象的初始化与销毁事件
+				监听ServletContext对象的初始化与销毁事件
+				常用于资源初始化加载、初始化创建等工作
+				包含如下方法签名
+					void contextInitialized( ServletContextEvent sce )
+						对应ServletContext对象的初始化事件
+					void contextDestroyed( ServletContextEvent sce)
+						对应ServletContext对象的销毁事件
+				参数javax.servlet.ServletContextEvent是代表Web应用上下文变化的事件类型，包含一个方法
+					public ServletContext getServletContext( )
+						获得正在创建或销毁的ServletContent实例
+		javax.servlet.http.HttpSessionListener
+			监听HttpSession对象的创建与销毁事件
+				监听session作用域中变量的增加、移除、替换事件
+				包含如下方法签名
+					void attributeAdded(
+								HttpSessionBindingEvent event )
+					对应变量被添加到session作用域的事件
+					void attributeRemoved(
+								HttpSessionBindingEvent event )
+					对应session作用域中的变量被移除的事件
+					void attributeReplaced(
+								HttpSessionBindingEvent event )
+					对应session作用域中的变量被替换的事件
+
+		javax.servlet.ServletRequestListener
+			监听ServletRequest对象的初始化与销毁事件，分别对应请求到达Web应用和离开Web应用
+		感知型监听器
+			javax.servlet.http.HttpSessionBindingListener
+				其实现类的实例可以感知自己被绑定到session中或从session中解绑的事件
+			javax.servlet.http.HttpSessionActivationListener
+				其实现类的实例绑定到session中后，容器在钝化和活化session时将通知该实例
+		session钝化与活化
+			了解
+三、总结

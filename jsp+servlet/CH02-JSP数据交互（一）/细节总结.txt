@@ -1,0 +1,29 @@
+﻿RequestDispatcher getRequestDispatcher(String path)
+	返回一个RequestDispatcher对象，该对象的forward(request, response)方法用于转发请求
+案例：
+	request.getRequestDispatcher("请求地址").forward(request, response);
+							
+							
+void sendRedirect(String location) 页面重定向
+	客户端将重新发送请求到指定的URL
+案例：
+	response.sendRedirect("请求地址");
+						
+//从请求的表单当中获取数据
+request.getParameter("name");
+				
+//从request的作用域去获取数据
+request.setAttribute("key-name", "value");
+request.getAttribute("key-name");
+				
+				
+1.转发请求
+	request.getRequestDispatcher("请求地址").forward(request, response);
+2.页面重定向
+	response.sendRedirect("请求地址");
+
+1.//从请求的表单当中获取数据
+	request.getParameter("name");
+2.//从request的作用域去获取数据
+	request.setAttribute("key-name", "value");//在request这个作用域中存一个属性(key-name)和值
+	request.getAttribute("key-name");//在request这个作用域中获取一个值，通过属性(key-name)
