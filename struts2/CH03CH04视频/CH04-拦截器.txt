@@ -1,0 +1,332 @@
+准备；
+	<dependency>
+		<groupId>junit</groupId>
+		<artifactId>junit</artifactId>
+		<version>4.12</version>
+		<scope>test</scope>
+	</dependency>
+	<dependency>
+		<groupId>org.apache.struts</groupId>
+		<artifactId>struts2-core</artifactId>
+		<version>2.3.16.3</version>
+	</dependency>
+	<dependency>
+		<groupId>javax.servlet</groupId>
+		<artifactId>javax.servlet-api</artifactId>
+		<version>3.1.0</version>
+		<scope>provided</scope>
+	</dependency>
+	<dependency>
+		<groupId>javax.servlet</groupId>
+		<artifactId>jstl</artifactId>
+		<version>1.2</version>
+	</dependency>
+
+一、Struts2架构剖析
+	1.1.PPT图
+	1.2.Struts  2核心接口和类
+		ActionMapper		根据请求的URI查找是否存在对应Action调用
+		ActionMapping		保存调用Action的映射信息，如namespace、name等
+		ActionProxy 		在XWork和真正的Action之间充当代理 
+		ActionInvocation	表示Action的执行状态，保存拦截器、Action实例 
+		Interceptor			在请求处理之前或者之后执行的Struts 2组件
+	1.3.Struts执行流程简图
+		PPT图
+
+二、拦截器
+	Servlet Model1
+	Struts2 Model2
+	SpringMVC Model2
+	
+
+	2.1.为什么需要拦截器
+		早期MVC框架将一些通用操作硬编码在核心控制器中，致使框架灵活性不足、可扩展性降低 
+		Struts 2将核心功能放到多个拦截器中实现，拦截器可自由选择和组合，增强了灵活性，有利于系统的解耦
+	2.2.什么是拦截器
+		Struts 2大多数核心功能是通过拦截器实现的，每个拦截器完成某项功能 
+		拦截器方法在Action执行之前和之后执行
+		拦截器栈
+			从结构上看，拦截器栈相当于多个拦截器的组合
+			在功能上看，拦截器栈也是拦截器 
+		拦截器与过滤器原理很相似
+	2.3.拦截器工作原理
+		PPT图形讲解
+	2.4.拦截器的简单应用
+		1.创建项目，pom.xml添加依赖；web.xml添加struts2过滤器；添加struts2核心配置文件struts.xml文件；添加package action和interceptor
+		2.编写action：MyTimerAction，简单输出一句话
+		3.编写interceptor拦截器：MyTimerInterceptor 继承 AbstractInterceptor 类
+			public class MyTimeInterceptor extends AbstractInterceptor {
+				@Override
+				public String intercept(ActionInvocation invocation) throws Exception {
+					//1、执行Action之前的工作：获取开始执行时间
+					long startTime = System.currentTimeMillis();
+					System.out.println("执行Action之前的工作，开始时间" + startTime);
+
+					//2、 执行后续拦截器或Action
+					String result = invocation.invoke();
+
+					//3、执行Action之后的工作：计算并输出执行时间
+					long endTime = System.currentTimeMillis();
+					long execTime = endTime - startTime;
+					System.out.println("执行Action后的，结束时间" + endTime);
+					System.out.println("总共用时" + execTime);
+
+					//返回结果字符串
+					return result;
+				}
+			}
+		4.在struts.xml中添加配置信息
+			<!--
+			struts.devMode：该属性设置Struts 2应用是否使用开发模式。
+			如果设置该属性为true，则可以在应用出错时显示更多、更友好的出错提示。
+			该属性只接受true和flase两个值，该属性的默认值是false。
+			通常，应用在开发阶段，将该属性设置为true，当进入产品发布阶段后，则该属性设置为false
+			-->
+			<constant name="struts.devMode" value="true"/>
+			<package name="default" namespace="/" extends="struts-default">
+				<interceptors>
+					<interceptor name="myTime" class="com.whcs.interceptor.MyTimeInterceptor"/>
+				</interceptors>
+				<action name="action" class="com.whcs.action.MyTimeAction">
+					<result>index.jsp</result>
+					<interceptor-ref name="myTime"/>
+					<interceptor-ref name="defaultStack" />
+				</action>
+			</package>
+	2.5.配置多个拦截器
+		<package name="default" namespace="/" extends="struts-default">
+			<interceptors>
+				<!-- 定义拦截器 -->
+				<interceptor name="myTime" class="com.whcs.interceptor.MyTimeInterceptor"/>
+				<interceptor name="testInter" class="com.whcs.interceptor.TestInterceptor" />
+				<!-- 定义拦截器栈 -->
+				<interceptor-stack name="myInterceptor">
+					<!--指定引用的拦截器-->
+					<interceptor-ref name="myTime" />
+					<interceptor-ref name="testInter" />
+					<interceptor-ref name="defaultStack" />
+				</interceptor-stack>
+			</interceptors>
+			<action name="action" class="com.whcs.action.MyTimeAction">
+				<result>index.jsp</result>
+				<interceptor-ref name="myInterceptor" />
+			</action>
+		</package>
+		
+		<!-- 定义默认拦截器 注意：这里需要将此标签配置在aciton标签的前面，顺序问题-->
+		<default-interceptor-ref name="defaultStack"></default-interceptor-ref>
+		
+		<!-- 全局结果 -->
+		<global-results>
+			<result name="login" type="redirect">/page/login.jsp</result>
+		</global-results>
+		
+		<!-- 默认Aciton：defaultAction只是一个Action标签的名字 -->
+		<default-action-ref name="defaultAction" />
+		<action name="defaultAction" class="com.whcs.action.DefaultAciton">
+			<result name="fail">/page/fail.jsp</result>
+		</action>
+		
+	2.6.Struts 2自带拦截器
+		params拦截器 
+			负责将请求参数设置为Action属性
+		servletConfig拦截器 
+			将源于Servlet API的各种对象注入到Action
+		fileUpload拦截器
+			对文件上传提供支持
+		exception拦截器
+			捕获异常，并且将异常映射到用户自定义的错误页面
+		validation拦截器 
+			调用验证框架进行数据验证
+	2.7.Struts 2默认拦截器栈
+		1.struts-default.xml中定义一个defaultStack拦截器栈，并将其指定为默认拦截器
+		2.只要在定义包的过程中继承struts-default包，那么defaultStack将是默认的拦截器
+
+
+三、自定义拦截器
+	3.1.实现Interceptor接口
+		void init()：初始化拦截器所需资源
+		void destroy()：释放在init()中分配的资源
+		String intercept(ActionInvocation ai) throws Exception
+			实现拦截器功能
+			利用ActionInvocation参数获取Action状态
+			返回结果码（result）字符串
+	3.2.继承AbstractInterceptor类 
+		提供了init()和destroy()方法的空实现
+		只需要实现intercept方法即可
+		推荐使用
+	3.3.判断用户是否登录
+		权限验证拦截器
+			public class AuthorizationInterceptor extends AbstractInterceptor {
+				 public String intercept(ActionInvocation invocation) throws Exception{
+					  //获取用户会话信息
+					  Map session = invocation.getInvocationContext().getSession();
+					  User user = (User)session.get("login");
+					  if (user == null) {
+						  //终止执行,返回登录页面
+						  return Action.LOGIN;
+					  } else {
+						  //继续执行剩余的拦截器和Action
+						  return invocation.invoke();
+					  }
+				  }
+			}
+		在配置文件中定义拦截器并引用它
+			<package name="renthouse" extends="struts-default">
+				<interceptors>
+					<!--定义权限验证拦截器-->
+					<interceptor name="myAuthorization"
+						class="cn.houserent.interceptor.AuthorizationInterceptor">
+					</interceptor>
+					 <!--定义拦截器栈-->
+					<interceptor-stack name="myStack">
+						<interceptor-ref name="defaultStack"/>
+						<interceptor-ref name="myAuthorization"/>
+					</interceptor-stack>
+				</interceptors>
+				<!-- 定义默认拦截器 -->
+				<default-interceptor-ref name="myStack"/>
+				… 
+			</package>
+
+
+四、文件上传
+	4.1.Commons-FileUpload组件
+		Commons是Apache开放源代码组织的一个Java子项目，其中的FileUpload是用来处理HTTP文件上传的子项目
+	4.2.Commons-FileUpload组件特点
+		使用简单：可以方便地嵌入到JSP文件中，编写少量代码即可完成文件的上传功能
+		能够全程控制上传内容
+		能够对上传文件的大小、类型进行控制
+			struts.properties配置详解：http://www.cnblogs.com/pigtail/archive/2013/02/12/2910348.html
+	4.3.实现步骤
+		1.设置表单提交属性，创建fileupload.jsp
+			<form enctype="multipart/form-data" method="post">
+			
+			<s:form action="upload" enctype="multipart/form-data" method="post">
+				<s:file name="upload" label="选择文件"/>
+			</s:form>
+		2.编写文件上传处理Action
+			public class UploadAction extends ActionSupport {
+				//封装文件标题属性
+				private String title;
+				//封装上传文件属性
+				private File upload;
+				//获取提交的文件类型
+				private String uploadContentType;
+				//封装上传文件名称
+				private String uploadFileName;
+				//获取文件上传的路径
+				private String savePath;
+
+				@Override
+				public String execute() throws Exception {
+					byte[] buffer = new byte[1024];
+					FileInputStream fis = new FileInputStream(this.getUpload());
+					FileOutputStream fos = new FileOutputStream(getSavePath() + "\\" + this.getUploadFileName());
+					int length = fis.read(buffer);
+					while (length > 0) {
+						//每次写入length长度的内容
+						fos.write(buffer, 0, length);
+						length = fis.read(buffer);
+					}
+					fis.close();
+					fos.flush();
+					fos.close();
+					return SUCCESS;
+				}
+				
+				//省略getter和setter方法
+				public String getSavePath() {
+					return ServletActionContext.getServletContext().getRealPath(savePath);
+				}
+			}
+		3.配置Action
+			<!--文件上传-->
+			<action name="upload" class="com.whcs.action.UploadAction">
+				<param name="savePath">/upload</param>
+				<result name="success">/upload_success.jsp</result>
+			</action>
+			
+			<!--设置编码格式-->
+			constant name="struts.i18n.encoding" value="utf-8" />
+		4.创建上传的文件夹：upload文件夹，注意：里面需要给一点东西，不然maven不会创建此文件夹，上传会出错说找不到文件夹位子
+		5.编写上传成功的页面
+			Code：
+				您所上传的文件是：<s:property value="uploadFileName"/><br/>
+				文件类型：<s:property value="uploadContentType"/><br/>
+				图片： <img src="<%=basePath%>/upload/<s:property value='uploadFileName'/>"/>
+	4.4.多文件上传
+		表单设置
+			多个File控件
+			name属性相同
+		Action的修改
+			将三个属性的类型修改成数组类型
+			//获取提交的多个文件
+			private File[] upload;
+			//封装上传文件的类型
+			private String[] uploadContentType;
+			//封装上传文件名称
+			private String[] uploadFileName;
+
+
+
+五、文件下载
+	5.1.stream结果类型
+		将文件数据（通过InputStream获取）直接写入响应流
+		相关参数的配置
+		contentType			设置发送到浏览器的MIME类型
+		contentLength		设置文件的大小
+		contentDisposition	设置响应的HTTP头信息中的Content-Disposition参数的值
+		inputName			指定Action中提供的inputStream类型的属性名称
+		bufferSize			设置读取和下载文件时的缓冲区大小
+	5.2.contentType类型设置
+		Word			application/msword
+		Excel			application/vnd.ms-excel
+		PPT				application/vnd.ms-powerpoint
+		图片			image/gif，image/bmp，image/jpeg
+		文本文件		text/plain
+		html网页		text/html
+		任意二进制数据	application/octet-stream
+	5.3.实现步骤
+		1.创建filedown.jsp文件夹
+			<a href="download?fileName=01.png">点击此处下载文档</a>
+		2.编写下载文件Action：FileDownAction
+			获取InputStream输入流
+			
+			public class FileDownAction extends ActionSupport {
+			//读取下载文件的目录
+			private String inputPath;
+			//下载文件的文件名
+			private String fileName;
+			//读取下载文件的输入流
+			private InputStream inputStream;
+			//下载文件的类型
+			private String conetntType;
+
+			//创建InputStream输入流
+			public InputStream getInputStream() throws FileNotFoundException {
+				String path = ServletActionContext.getServletContext().getRealPath(inputPath);
+				return new BufferedInputStream(new FileInputStream(path + "\\" + fileName));
+			}
+
+			@Override
+			public String execute() throws Exception {
+				return SUCCESS;
+			}
+
+			//省略getter和setter方法
+		}
+		3.配置Action信息
+			<!--文件下载-->
+			<action name="download" class="com.whcs.action.FileDownAction">
+				<param name="inputPath">/upload</param>
+				<!-- 指定下载文件的类型、下载形式等 -->
+				<result name="success" type="stream">
+					<param name="contentType">application/octet-stream</param>
+					<param name="inputName">inputStream</param>
+					<param name="contentDisposition">attachment;filename="${fileName}"</param>
+					<param name="bufferSize">4096</param>
+				</result>
+			</action>
+
+六、总结

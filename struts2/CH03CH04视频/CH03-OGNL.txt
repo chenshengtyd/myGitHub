@@ -1,0 +1,288 @@
+一、OGNL简介
+	1.1.什么是OGNL 
+		Object Graph Navigation Language
+		开源项目，取代页面中Java脚本<% %> --->>>EL -->> JSTL，简化数据访问
+		和EL同属于表达式语言，但功能更为强大 
+	1.2.OGNL在Struts 2中做的两件事情
+		表达式语言
+			将表单或Struts 2标签与特定的Java数据绑定起来，用来将数据移入、移出框架 
+		类型转换 
+			数据进入和流出框架，在页面数据的字符串类型和Java数据类型之间进行转换
+	1.3.OGNL在框架中的作用
+		OGNL融入Struts 2
+			数据流入
+			数据流出 
+
+二、值栈与OGNL
+	2.1.值栈(ValueStack):<s:debug />
+		由Struts 2框架创建的存储区域，具有栈的特点
+		Action的实例会被存放到值栈中
+	2.2.OGNL访问值栈
+		按照从上到下的顺序
+		靠近栈顶的同名属性会被读取
+			<input type='text' name = abc />
+			private String abc;
+			数组 集合 对象 集合泛型对象
+			[]  List  User  List<User>
+
+三、为什么进行类型转换：
+	1.1.在基于HTTP协议的Web应用中
+		客户端请求的所有内容都以文本编码方式传输到服务器端
+		服务器端的编程语言却有着丰富的数据类型
+	1.2.Servlet中，类型转换工作由开发者自己完成
+		String agestr = request.getParameter("age");
+		int age = Integer.parseInt(agestr);
+	1.3.内置类型转换器
+		内置类型转换器			说    明
+		String					将int、long、double、boolean、String类型的数组或者java.util.Date类型转换为字符串
+		boolean/Boolean			在字符串和布尔值之间进行转换
+									"false" false
+									"trues"	trues
+									abc Integer
+		char/Character			在字符串和字符之间进行转换
+		int/Integer、float/		在字符串和数值型数据之间进行转换
+		Float、long/Long、double/Double	
+		Date					在字符串和日期类型之间进行转换。具体输入输出格式与当前的Locale相关
+		数组和集合				在字符串数组和数组对象、集合对象间进行转换
+		
+		原始类型与包装类型：ShowOriginalAndJavaBeanAction + Address.java + User.java + struts.xml + result.jsp
+			public class ShowOriginalAndJavaBeanAction extends ActionSupport {
+				private User user;
+				private String message;
+				public String execute(){
+					user=new User();
+					user.setName("Jason");
+					user.setAge(23);
+					setMessage("展示原始类型和JavaBean");
+					return SUCCESS;
+				}
+			}
+			<body>
+				信息：<s:property value="message" default="展示数据" /><br/>
+				姓名：<s:property value="user.name" /><br/>
+				……
+			</body>
+		
+		多值类型的数据处理：ArraysDataTransferAction.java + ListDataTransferAction.java + entity + struts.xml
+			数组
+				public class ArraysDataTransferAction extends ActionSupport {
+					private String[] hobbies;
+					private Double[] numbers = new Double[3];
+					//省略setter&getter&execute方法
+				}
+			集合
+				public class ListDataTransferAction extends ActionSupport {
+					private List hobbies;
+					private List<Double> numbers;
+					private List<User> users;
+					//省略setter&getter&execute方法
+				}
+
+四、创建自定义类型转换器:
+	DateConverter.java + 
+	DateConvertAction.java + 
+	DateConvertAction.properties + 
+	message.properties + 
+	xwork-conversion.properties + //使用你自己的类型转换器
+	index.jsp + 
+	success.jsp + 
+	struts.xml		-->><constant name="struts.custom.i18n.resources" value="message"/>
+	4.1.继承StrutsTypeConverter抽象类
+		继承org.apache.struts2.util.StrutsTypeConverter类
+		#将一个或多个字符串值转换为指定的类型
+		public Object convertFromString(Map context, String[] val, Class toType)
+		#将指定对象转化为字符串 
+		public String convertToString(Map context, Object object)
+	4.2.配置自定义类型转换器
+		应用于全局范围的类型转换器
+			在src目录创建xwork-conversion.properties
+			转换类全名=类型转换器类全名
+		应用于特定类的类型转换器
+			在特定类的相同目录下创建一个名为ClassName-conversion.properties的属性文件
+			特定类的属性名=类型转换器类全名
+	4.3.处理类型转换错误
+		1.向用户输出类型转换错误的前提条件
+			启动StrutsConversionErrorInterceptor拦截器 
+				拦截器已经包含在defaultStack拦截器栈中 
+			Action要继承ActionSupport类 
+				实质是实现ValidationAware接口 
+			配置input结果映射
+			页面使用Struts 2表单标签或<s:fielderror>标签
+				Struts 2表单标签内嵌了输出错误信息功能
+				普通HTML标签需使用<s:fielderror>标签输出转换错误 
+		2.修改所有类型的转换错误信息 
+			思路
+				修改xwork.default.invalid.fieldvalue键的值
+			实现
+				在struts.xml中指定资源文件的基名
+					<constant name="struts.custom.i18n.resources" value="message"/>
+				在src目录下创建资源文件message.properties并修改键值
+					xwork.default.invalid.fieldvalue=字段“{0}”的值无效
+		3.定制特定字段的类型转换错误信息 
+			思路
+				在Action范围的资源文件中添加I18N消息键invalid.fieldvalue.xxx
+			实现
+				在Action包下创建RegisterAction.properties，指定键值
+				invalid.fieldvalue.birthday=生日转换错误
+
+五、OGNL表达式注意事项:list_input2.jsp + result2.jsp + struts.xml + ShowArraysAndListAction
+	5.1.访问Bean的属性
+		Bean的类型必须遵循JavaBean规范
+			必须具有无参构造
+		getter/getter方法符合JavaBean规范
+	5.2.访问集合对象
+		可以使用属性名[index]的方式访问
+			列表、数组
+		可以使用属性名[key]的方式访问
+			Map对象
+		使用size或者length获取集合长度
+	5.3.常用的OGNL访问操作
+		访问JavaBean 
+			public class Address { // 家庭地址
+				private String country; // 国家
+				private String city; // 城市
+				private String street; // 街道
+				...  //省略各个属性的setter和getter方法
+			}
+
+			public class User { //用户类
+				private String name; //姓名
+				private int age;     //年龄
+				private Address address; //家庭地址
+				...  //省略各个属性的setter和getter方法
+			}
+		语法：
+			定义列表
+				{value1,value2,values3,...,valueN }
+			示例
+				<s:set name="list" value="{'jason','tom','jack'}"/>
+				访问列表
+				<s:property value="#list[0]"/>
+				<s:property value="#list.size"/>
+				
+				<s:set>标签将一个值赋给指定范围的变量
+				<s:property>标签用于输出指定对象的属性值
+			
+			定义数组
+				new int[ ]{1,2,3,4}
+				new double[4]
+			访问数组(访问已创建的数组，对象名为array)
+				访问第一个元素
+					array[0] 
+				获取数组长度
+					array.length
+			
+			定义Map
+				#{key1:value1,key2:value2,key3:values3,..., keyN:valueN }
+			示例：
+				<s:set name="map" value="#{'cn':'China','us':'the United States','fr':'France','jp':'Japan'}" />
+			访问Map
+				访问已创建的Map，对象名为map
+					访问“China”
+					#map["cn"] 
+					#map.cn
+
+六、Struts 2下使用OGNL:ac.jsp
+	6.1.访问非值栈对象 
+		通过PPT
+	6.2.访问非值栈对象
+		非值栈对象 			访问方式						等价访问方式
+		application			#application.username			application.getAttribute("username")
+							#application['username'] 	
+		session				#session.username				session.getAttribute("userName")
+							#session['username'] 	
+		request				#request.username 				request.getAttribute("username")
+							#request['username'] 	
+			
+		parameters			#parameters.username			request.getParameterValues("username") 
+							#parameters['username'] 	
+		attr				#attr.username					按pageContext–>request–>session–>application顺序查找
+							#attr['username']	
+	6.3.访问非值栈对象
+		<s:set name="age" value="10" scope="request"/>
+		<s:set name="username" value="'Jason'" scope="session"/>
+		<s:set name="count" value="5" scope="application"/>		
+		<c:set value= "123123" name="num" />
+		<c:out />
+		
+		#request.age:<s:property value="#request.age"/><br/>
+		#session.username:<s:property value="#session.username"/><br/>
+		#application.count:<s:property value="#application.count"/><br/>
+		#attr.count:<s:property value="#attr.count" /><br />	
+		
+		<s:set name="country1" value="China"/>	
+		<s:set name="country2" value="'China'"/>
+		
+		#country1:<s:property value="#country1"/><br/>
+		#country2:<s:property value="#country2"/><br/>	
+		#request.country2:<s:property value="#request.country2"/><br/>	
+
+七、查看ActionContext中的数据
+	使用<s:debug/>查看数据
+		ActionContext的组成
+			值栈-ValueStack
+			非值栈-Stack Context
+
+八、Struts 2标签的属性类型:
+	8.1.字符串类型使用%{…}，如URL标签
+		<s:set name="myurl" value="'http://www.sohu.com'"/>
+		<s:url value="#myurl"/>    //显示#myurl
+		<s:url value="%{#myurl}"/>  //显示http://www.sohu.com
+	8.2.对象类型直接作为OGNL表达式进行计算
+		<s:set name="myurl" value="'http://www.sohu.com'"/> 
+		<s:property value="#myurl"/>  //显示http://www.sohu.com
+	8.3.URL标签: Url.jsp
+		<s:url value="url" />
+			<s:param name="parname"  value="parvalue" />
+		</s:url>
+		value属性：表示指定生成URL的地址
+		<s:param />表示需要传递的参数信息
+			name属性：表示传递的参数名称
+			value属性：表示传递参数所具有的值
+	8.4.日期标签:show_date.jsp + DateAction.java + struts.xml
+		 <s:date format="format"  nice="true|false"  name="name" id="id">
+				……
+		</s:date>
+		format属性：指定格式进行日期格式化
+		nice属性：该属性只有true和false两个值，用于指定是否输出指定日期与当前时间的时差，默认是false
+		name属性：表示当前需要格式化的日期
+		id属性：表示引用该元素的id值
+  
+九、总结
+	Struts 2提供了非常强大的类型转换功能，提供了多种内置类型转换器，也支持开发自定义类型转换器
+	Struts 2框架使用OGNL作为默认的表达式语言
+	ActionContext中包含多个对象。如果使用OGNL访问根对象，可直接书写对象的属性，而要使用其他对象必须使用“#key”前缀来访问
+	使用Struts 2日期标签可以实现日期输出的格式化显示，使用URL标签可以构建一个超链接
+
+
+
+	
+	
+
+
+
+
+
+
+
+
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		

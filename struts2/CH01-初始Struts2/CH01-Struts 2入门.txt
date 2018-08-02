@@ -1,0 +1,142 @@
+一、介绍Struts2框架
+	1.1.优势
+		Struts 2是一个MVC框架，以WebWork框架的设计思想为核心，吸收了Struts 1的部分优点		SSH2 SSM2 = Spring
+		Struts 2拥有更加广阔的前景，自身功能强大--王婆卖瓜
+	1.2.如何获取Struts2
+		Struts 2官方地址：http://struts.apache.org
+		本书选取Struts 2.3.16.3进行讲解
+		Struts 2 目录结构
+			apps		Struts2 示例应用程序
+			docs		Struts 2指南、向导、API文档
+			lib			Struts 2的发行包及其依赖包
+			src			Struts 2项目源代码
+			
+	ASP.net -->>Java中的J2EE
+	JSP
+	
+	J2SE 标准开发
+	J2EE 企业开发
+
+二、体验Struts2 HelloWorld
+	使用Struts 2 开发程序的基本步骤
+		1.加载Struts 2 类库---添加jar包
+			<dependency>
+				<groupId>org.apache.struts</groupId>
+				<artifactId>struts2-core</artifactId>
+				<version>2.3.16.3</version>
+			</dependency>
+			<dependency>
+				<groupId>javax.servlet</groupId>
+				<artifactId>javax.servlet-api</artifactId>
+				<version>3.1.0</version>
+				<scope>provided</scope>
+			</dependency>
+		2.配置web.xml文件
+			<filter>
+				<filter-name>struts2</filter-name>
+				<filter-class>
+					org.apache.struts2.dispatcher.ng.filter.StrutsPrepareAndExecuteFilter
+				</filter-class>
+			</filter>
+
+			<filter-mapping>
+				<filter-name>struts2</filter-name>
+				<url-pattern>/*</url-pattern>
+			</filter-mapping>
+			
+			更换web.xml头文件为 3.+版本
+			<?xml version="1.0" encoding="UTF-8"?>
+			<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee"
+					 xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+					 id="WebApp_ID" version="3.0">
+			</web-app>
+		3.开发视图层页面 JSP
+			<%@ taglib prefix="s" uri="/struts-tags" %>
+			<s:property value="messageInfo"/>
+		4.开发控制层Action --Aciton接口 ActionSupport类：实现了Action的接口，然后方法更丰富
+			编写一个HelloWorldAciton类 实现Aciton 接口；重写Execute方法
+			添加属性，添加getter和setter方法
+		5.配置struts.xml文件：Mybatis的核心配置文件mybatis-config.xml hibernate核心配置文件：hibernate.cfg.xml文件
+			创建一个success.jsp页面，编写一点东西
+		
+			<package name="default" extends="struts-default" namespace="/">
+				<action name="helloWorld" class="com.whcs.action.HelloWorldAciton">
+					<result name="success">success.jsp</result>
+				</action>
+			</package>
+		6.部署、运行项目
+			添加Tomcat，启动项目
+三、Struts 2访问Servlet API
+	3.1.与Servlet API解耦的访问方式
+		Map<String, Object> session = ActionContext.getContext().getSession();//从ActionContext中获取session
+		if (session.containsKey("username")){//判断session中是否已经存在，存在就移除掉重新添加
+			session.remove("username");
+		}else if(session.containsKey("pwd")){
+			session.remove("pwd");
+		}
+		session.put("username", username);
+		session.put("pwd", pwd);
+	3.2.与Servlet API耦合的访问方式
+		HttpSession session = ServletActionContext.getRequest().getSession();
+		if (session.getAttribute("username") != null) {
+			session.removeAttribute("username");
+		} else if (session.getAttribute("pwd") != null) {
+			session.removeAttribute("pwd");
+		}
+		session.setAttribute("username", username);
+		session.setAttribute("pwd", pwd);
+		
+四、Struts 2的数据校验
+	4.1.Struts 2提供了数据验证机制
+		继承ActionSupport类来完成Action开发
+		ActionSupport类不仅对Action接口进行简单实现，同时增加了验证、本地化等支持 
+	4.2.ActionSupport方法介绍
+		1.validate方法---验证
+			addFieldError("errorTitle","errorInfo");
+			<s:fielderror/>全部 或者 <s:fielderror fieldName="name" />单个
+			配置struts.xml <result name="input">login.jsp</result>
+		2.execute方法
+			跟Aciton接口中的execute方法一样
+			
+五、Struts 2标签
+	5.1.常用表单标签
+		标  签								说   明
+		<s:form>…</s:form>					表单标签
+		<s:textfield>…</s: textfield>		文本输入框
+		<s:password>…</s: password>			密码输入框
+		<s:textarea>…</s: textarea>			文本域输入框
+		<s:radio>…</s: radio>				单选按钮
+		<s:checkbox>…</s: checkbox>			多选框
+		<s:submit/>							提交标签
+		<s:reset/>							重置标签
+		<s:hidden/>							隐藏域标签
+	5.2.常用非表单标签
+		标  签								说   明
+		<s:actionerror/>					显示Action错误
+		<s:actionmessage/>					显示Action消息
+		<s:fielderror/>						显示字段错误
+	5.3.常用通用标签
+		条件标签	<s:if>……</s:if>				根据表达式的值，判断将要执行的内容
+					<s:elseif>……</s:elseif>	
+					<s:else>……</s:else>	
+					
+			<s:if test="表达式">
+				需要执行的代码
+			</s:if>
+			<s:elseif test="表达式">
+					需要执行的代码
+			</s:elseif>
+			<s:else>
+				需要执行的代码
+			</s:else>
+
+		迭代		<s:iterator>……</s:iterator>	用于遍历集合
+			1.在XXXAciton类中添加一个属性，给getter和setter方法
+			2.在execute方法中添加数据
+			<s:iterator value="list" id="name">
+				<s:property value="name"/></br>
+			</s:iterator>
+		
+			
+
+
