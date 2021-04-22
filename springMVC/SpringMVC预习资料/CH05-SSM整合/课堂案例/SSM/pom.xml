@@ -71,7 +71,7 @@
         <dependency>
             <groupId>org.mybatis</groupId>
             <artifactId>mybatis</artifactId>
-            <version>3.2.2</version>
+            <version>3.5.6</version>
         </dependency>
         <!--Spring和Mybatis集成插件-->
         <dependency>
